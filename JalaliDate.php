@@ -58,9 +58,11 @@ class JalaliDate {
             }
         }
 
-        // Create the DateTime object with the correct timezone to prevent off-by-one errors.
-        $date = new DateTime('now', new DateTimeZone('Asia/Tehran'));
+        // Create the DateTime object from the timestamp and then set the timezone.
+        // This is a more stable way to handle it.
+        $date = new DateTime();
         $date->setTimestamp($timestamp);
+        $date->setTimezone(new DateTimeZone('Asia/Tehran'));
 
         return $date;
     }

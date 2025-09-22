@@ -7,13 +7,13 @@
 -- =================================================================
 
 
--- اضافه کردن ستون برای ساعات کاری موظفی و مرخصی سالانه
+-- اضافه کردن ستون برای ساعات کاری موظفی و مرخصی سالانه به جدول کاربران
 ALTER TABLE `users`
 ADD COLUMN `daily_hours_goal` float NOT NULL DEFAULT 8 AFTER `role`,
 ADD COLUMN `annual_leave_days` INT(11) NOT NULL DEFAULT 26 AFTER `daily_hours_goal`;
 
 
--- اضافه کردن ستون برای تفکیک بین زمان کاری و استراحت
+-- اضافه کردن ستون برای تفکیک بین زمان کاری و استراحت به جدول لاگ‌های زمانی
 ALTER TABLE `time_logs`
 ADD COLUMN `log_type` ENUM('work','break') NOT NULL DEFAULT 'work' AFTER `end_time`;
 

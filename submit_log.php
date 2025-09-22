@@ -24,8 +24,8 @@ $work_end_times = $_POST["end_time"] ?? [];
 $total_break_minutes = (int)($_POST['total_break_minutes'] ?? 0);
 
 // --- Validation ---
-if (!checkdate($month, $day, $year)) { // Basic check, not Jalali-aware but good enough for format
-    die("Invalid date parts provided.");
+if (!checkdate((int)$month, (int)$day, (int)$year)) { // Basic check, not Jalali-aware but good enough for format
+    die("Invalid date parts provided. Please ensure day, month, and year are filled correctly.");
 }
 $gregorian_date_obj = JalaliDate::fromJalaliToDateTime($log_date_jalali);
 if ($gregorian_date_obj === false) { die("Invalid Jalali date."); }
