@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 22, 2025 at 12:00 PM
+-- Generation Time: Sep 22, 2025 at 01:00 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `full_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_persian_ci DEFAULT NULL,
   `role` enum('employee','admin') NOT NULL DEFAULT 'employee',
   `daily_hours_goal` float NOT NULL DEFAULT 8,
+  `annual_leave_days` int(11) NOT NULL DEFAULT 26,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
@@ -39,9 +40,9 @@ CREATE TABLE IF NOT EXISTS `users` (
 -- Dumping data for table `users`
 --
 
-INSERT IGNORE INTO `users` (`id`, `username`, `password`, `full_name`, `role`, `daily_hours_goal`) VALUES
-(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ادمین سیستم', 'admin', 8),
-(2, 'testuser', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'کاربر تستی', 'employee', 8);
+INSERT IGNORE INTO `users` (`id`, `username`, `password`, `full_name`, `role`, `daily_hours_goal`, `annual_leave_days`) VALUES
+(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ادمین سیستم', 'admin', 8, 26),
+(2, 'testuser', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'کاربر تستی', 'employee', 8, 26);
 
 -- --------------------------------------------------------
 
@@ -62,5 +63,23 @@ CREATE TABLE IF NOT EXISTS `time_logs` (
   KEY `user_id` (`user_id`),
   CONSTRAINT `time_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `leave_logs`
+--
+
+CREATE TABLE IF NOT EXISTS `leave_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `leave_date` date NOT NULL,
+  `reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_persian_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id_leave_date` (`user_id`,`leave_date`),
+  CONSTRAINT `leave_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 COMMIT;

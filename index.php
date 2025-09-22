@@ -60,6 +60,7 @@ if ($is_editing) {
                 <div class="collapse navbar-collapse" id="main-nav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item"><a class="nav-link" href="reports.php">گزارش‌ها</a></li>
+                        <li class="nav-item"><a class="nav-link" href="leave.php">مدیریت مرخصی</a></li>
                         <li class="nav-item"><a class="nav-link" href="change_password.php">تغییر رمز</a></li>
                         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                             <li class="nav-item"><a class="nav-link" href="admin.php">پنل مدیریت</a></li>

@@ -9,7 +9,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || !isset($_S
 // Fetch all users
 $users = [];
 try {
-    $sql = "SELECT id, username, full_name, role, daily_hours_goal FROM users ORDER BY id";
+    $sql = "SELECT id, username, full_name, role, daily_hours_goal, annual_leave_days FROM users ORDER BY id";
     $stmt = $pdo->query($sql);
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -23,12 +23,12 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مدیریت کاربران</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    <style> body { background-color: #f8f9fa; } .container { max-width: 900px; } </style>
+    <style> body { background-color: #f8f9fa; } .container { max-width: 1000px; } </style>
 </head>
 <body>
     <div class="container my-4">
         <h2 class="mb-4">پنل مدیریت کاربران</h2>
-        <p>در این صفحه می‌توانید ساعات کاری موظفی روزانه برای هر کاربر را تنظیم کنید.</p>
+        <p>در این صفحه می‌توانید تنظیمات مربوط به هر کاربر را مدیریت کرده و گزارش‌های آن‌ها را مشاهده کنید.</p>
 
         <div class="d-grid gap-2 d-md-flex justify-content-md-start mb-3">
              <a href="add_user.php" class="btn btn-success">افزودن کاربر جدید +</a>
@@ -47,7 +47,9 @@ try {
                             <th>نام کاربری</th>
                             <th>نام کامل</th>
                             <th>نقش</th>
-                            <th>ساعات کاری موظفی</th>
+                            <th>ساعات کاری</th>
+                            <th>مرخصی سالانه</th>
+                            <th>عملیات</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,6 +62,12 @@ try {
                             <td>
                                 <input type="hidden" name="user_ids[]" value="<?php echo $user['id']; ?>">
                                 <input type="number" step="0.1" class="form-control form-control-sm" name="daily_hours[]" value="<?php echo htmlspecialchars($user['daily_hours_goal']); ?>" required>
+                            </td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm" name="annual_leave[]" value="<?php echo htmlspecialchars($user['annual_leave_days']); ?>" required>
+                            </td>
+                            <td>
+                                <a href="reports.php?user_id=<?php echo $user['id']; ?>" class="btn btn-info btn-sm">مشاهده گزارش</a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
