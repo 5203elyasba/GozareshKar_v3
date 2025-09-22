@@ -16,11 +16,33 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupCustomNumberInputs() {
         document.querySelectorAll('.custom-number-input').forEach(container => {
             const input = container.querySelector('input[type="text"]');
+            if (!input) return;
             const decBtn = container.querySelector('.btn-decrement');
             const incBtn = container.querySelector('.btn-increment');
-            if (!input || !decBtn || !incBtn) return;
-            decBtn.addEventListener('click', () => { let val = parseInt(input.value) || 1; if(val > 1) input.value = val - 1; });
-            incBtn.addEventListener('click', () => { let val = parseInt(input.value) || 0; if(val < 31) input.value = val + 1; });
+            if (!decBtn || !incBtn) return;
+
+            const updateValue = (amount) => {
+                let currentVal = parseInt(input.value, 10);
+                if (isNaN(currentVal)) currentVal = 1;
+
+                let min = 1, max = 31;
+                if (input.name.includes('month')) {
+                    max = 12;
+                } else if (input.name.includes('year')) {
+                    min = 1390; max = 1500;
+                }
+
+                let newVal = currentVal + amount;
+
+                // Rollover logic
+                if (newVal > max) newVal = min;
+                if (newVal < min) newVal = max;
+
+                input.value = newVal;
+            };
+
+            decBtn.addEventListener('click', () => updateValue(-1));
+            incBtn.addEventListener('click', () => updateValue(1));
         });
     }
     if (dayInput) setupCustomNumberInputs();
@@ -39,8 +61,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function checkIntervalLimit() {
+        if (!workContainer || !addWorkBtn) return;
+        const rowCount = workContainer.querySelectorAll('.time-interval-row').length;
+        addWorkBtn.disabled = rowCount >= 3;
+    }
+
     if (addWorkBtn && workContainer) {
         addWorkBtn.addEventListener('click', () => {
+            if (workContainer.querySelectorAll('.time-interval-row').length >= 3) return;
             const newInterval = document.createElement('div');
             newInterval.classList.add('row', 'g-2', 'mb-2', 'align-items-center', 'time-interval-row');
             newInterval.innerHTML = `
@@ -54,16 +83,48 @@ document.addEventListener('DOMContentLoaded', function() {
             workContainer.appendChild(newInterval);
             newInterval.querySelectorAll('.time-input').forEach(applyTimeMask);
             updateRemoveButtons();
+            checkIntervalLimit();
         });
     }
 
     workContainer.addEventListener('click', (e) => {
         if (e.target && e.target.classList.contains('remove-interval')) {
-            e.target.closest('.time-interval-row').remove();
-            updateRemoveButtons();
+            const row = e.target.closest('.time-interval-row');
+            const logIdInput = row.querySelector('input[name="log_id[]"]');
+
+            // If the row was never saved to the DB, just remove it from the DOM
+            if (!logIdInput || !logIdInput.value) {
+                row.remove();
+                updateRemoveButtons();
+                checkIntervalLimit();
+                return;
+            }
+
+            // If it exists in the DB, we need to delete it via AJAX
+            if (confirm('آیا از حذف این بازه زمانی مطمئن هستید؟')) {
+                fetch('delete_time_log.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ log_id: logIdInput.value })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        row.remove();
+                        updateRemoveButtons();
+                        checkIntervalLimit();
+                    } else {
+                        alert('خطا در حذف: ' + data.message);
+                    }
+                })
+                .catch(err => alert('خطای شبکه.'));
+            }
         }
     });
-    if (workContainer) updateRemoveButtons();
+    if (workContainer) {
+        updateRemoveButtons();
+        checkIntervalLimit();
+    }
 
 
     // --- "Fetch Date" Button ---

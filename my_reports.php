@@ -12,11 +12,24 @@ $user_id = $_SESSION['id'];
 $user_full_name = $_SESSION['full_name'] ?? 'کاربر';
 $logs_by_date = [];
 
+$selected_year = $_GET['year'] ?? null;
+$selected_month = $_GET['month'] ?? null;
+
 try {
-    // Fetch all time logs for the user
-    $logs_stmt = $pdo->prepare("SELECT log_date, start_time, end_time, log_type FROM time_logs WHERE user_id = :user_id ORDER BY log_date DESC, start_time ASC");
-    $logs_stmt->execute(['user_id' => $user_id]);
-    $all_logs = $logs_stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Fetch distinct years with logs for this user
+    $years_stmt = $pdo->prepare("SELECT DISTINCT YEAR(log_date) as log_year FROM time_logs WHERE user_id = :user_id ORDER BY log_year DESC");
+    $years_stmt->execute(['user_id' => $user_id]);
+    $available_years = $years_stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // If a year and month are selected, fetch the logs for that period
+    if ($selected_year && $selected_month) {
+        $logs_sql = "SELECT log_date, start_time, end_time, log_type FROM time_logs WHERE user_id = :user_id AND YEAR(log_date) = :year AND MONTH(log_date) = :month ORDER BY log_date ASC, start_time ASC";
+        $logs_stmt = $pdo->prepare($logs_sql);
+        $logs_stmt->execute(['user_id' => $user_id, 'year' => $selected_year, 'month' => $selected_month]);
+        $all_logs = $logs_stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $all_logs = []; // Don't show any logs if no period is selected
+    }
 
     // Group logs by date
     foreach ($all_logs as $log) {
@@ -55,14 +68,40 @@ try {
     <div class="container my-5">
         <?php if(file_exists('nav.php')) { require_once 'nav.php'; } ?>
 
-        <h3 class="mb-4">گزارشات دقیق روزانه شما</h3>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0">گزارشات دقیق روزانه شما</h3>
+            <div class="col-md-4">
+                <form action="my_reports.php" method="get" id="year-select-form">
+                    <select name="year" class="form-select" onchange="this.form.submit()">
+                        <option value="">انتخاب سال</option>
+                        <?php foreach ($available_years as $year): ?>
+                            <option value="<?php echo $year; ?>" <?php if ($year == $selected_year) echo 'selected'; ?>>
+                                سال <?php echo $year; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            </div>
+        </div>
 
-        <?php if (empty($logs_by_date)): ?>
-            <div class="alert alert-info">هیچ گزارشی برای شما ثبت نشده است.</div>
-        <?php else: ?>
-            <div class="accordion" id="reports-accordion">
-                <?php foreach ($logs_by_date as $date => $data): ?>
-                    <div class="accordion-item">
+        <?php if ($selected_year): ?>
+            <div class="list-group list-group-horizontal-md mb-4">
+                <?php for ($m = 1; $m <= 12; $m++): ?>
+                    <a href="my_reports.php?year=<?php echo $selected_year; ?>&month=<?php echo $m; ?>"
+                       class="list-group-item list-group-item-action <?php if ($m == $selected_month) echo 'active'; ?>">
+                       <?php echo ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"][$m-1]; ?>
+                    </a>
+                <?php endfor; ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($selected_year && $selected_month): ?>
+            <?php if (empty($all_logs)): ?>
+                <div class="alert alert-info">هیچ گزارشی برای این ماه ثبت نشده است.</div>
+            <?php else: ?>
+                <div class="accordion" id="reports-accordion">
+                    <?php foreach ($logs_by_date as $date => $data): ?>
+                        <div class="accordion-item">
                         <h2 class="accordion-header" id="heading-<?php echo str_replace('/', '-', $date); ?>">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<?php echo str_replace('/', '-', $date); ?>" aria-expanded="false">
                                 <div class="w-100 d-flex justify-content-between pe-3">
