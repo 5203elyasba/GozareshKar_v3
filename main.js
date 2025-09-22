@@ -17,59 +17,80 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- Initialize Jalali Date Picker ---
-    try {
-        const dateInput = document.getElementById('log_date');
-        if (dateInput) {
-            new persianDatepicker(dateInput, {
-                format: 'YYYY/MM/DD',
-                autoClose: true,
-                initialValue: false,
-                onSelect: function(unix) {
-                    const selectedDate = new persianDate(unix).format('YYYY/MM/DD');
-                    window.location.href = 'index.php?date=' + selectedDate;
-                }
-            });
+    // --- Date Input Logic ---
+    const dayInput = document.querySelector('input[name="log_day"]');
+    const monthInput = document.querySelector('input[name="log_month"]');
+    const yearInput = document.querySelector('input[name="log_year"]');
+
+    function updateMaxDays() {
+        if (!dayInput || !monthInput || !yearInput) return;
+        const month = parseInt(monthInput.value, 10);
+        const year = parseInt(yearInput.value, 10);
+        let maxDays = 31;
+        if (month >= 7 && month <= 11) {
+            maxDays = 30;
+        } else if (month === 12) {
+            // Simple leap year check for Jalali calendar is complex.
+            // A common approximation is that years that have a remainder of 1, 5, 9, 13, 17, 22, 26, 30 when divided by 33 are leap years.
+            // For simplicity here, we'll assume 29 days unless a more precise library is needed later.
+            const leap_years_pattern = [1, 5, 9, 13, 17, 22, 26, 30];
+            if(leap_years_pattern.includes(year % 33)) {
+                 maxDays = 30;
+            } else {
+                 maxDays = 29;
+            }
         }
-    } catch (e) {
-        console.error("persianDatepicker could not be initialized.", e);
+        dayInput.max = maxDays;
+        if (parseInt(dayInput.value, 10) > maxDays) {
+            dayInput.value = maxDays;
+        }
+    }
+
+    if (monthInput && yearInput) {
+        monthInput.addEventListener('change', updateMaxDays);
+        yearInput.addEventListener('change', updateMaxDays);
+        // Initial check
+        updateMaxDays();
     }
 
     // --- Apply mask to initial time elements ---
     document.querySelectorAll('.time-input').forEach(applyTimeMask);
 
-    // --- Generic function to add new interval rows ---
-    function addInterval(container, namePrefix) {
+    // --- Function to add new work interval rows ---
+    function addWorkInterval(container) {
         const newInterval = document.createElement('div');
         newInterval.classList.add('row', 'g-2', 'mb-2', 'align-items-end');
-        const isWork = namePrefix === 'start_time';
-        const label = isWork ? 'کاری' : 'استراحت';
-        const required = isWork ? 'required' : '';
-
         newInterval.innerHTML = `
-            <div class="col-md"><label class="form-label">شروع ${label}</label><input type="text" class="form-control time-input" name="${namePrefix}[]" placeholder="HH:MM" ${required}></div>
-            <div class="col-md"><label class="form-label">پایان ${label}</label><input type="text" class="form-control time-input" name="${namePrefix.replace('start', 'end')}[]" placeholder="HH:MM" ${required}></div>
+            <div class="col-md"><label class="form-label">ساعت شروع</label><input type="text" class="form-control time-input" name="start_time[]" placeholder="HH:MM" required></div>
+            <div class="col-md"><label class="form-label">ساعت پایان</label><input type="text" class="form-control time-input" name="end_time[]" placeholder="HH:MM" required></div>
             <div class="col-md-auto"><button type="button" class="btn btn-danger remove-interval">-</button></div>
         `;
         container.appendChild(newInterval);
         newInterval.querySelectorAll('.time-input').forEach(applyTimeMask);
     }
 
-    // --- Handle adding new WORK intervals ---
+    // --- Event Listeners for adding intervals ---
     const addWorkBtn = document.getElementById('add-interval');
     const workContainer = document.getElementById('time-intervals-container');
     if (addWorkBtn && workContainer) {
-        addWorkBtn.addEventListener('click', () => addInterval(workContainer, 'start_time'));
+        addWorkBtn.addEventListener('click', () => addWorkInterval(workContainer));
     }
 
-    // --- Handle adding new BREAK intervals ---
-    const addBreakBtn = document.getElementById('add-break-interval');
-    const breakContainer = document.getElementById('break-intervals-container');
-    if (addBreakBtn && breakContainer) {
-        addBreakBtn.addEventListener('click', () => addInterval(breakContainer, 'break_start_time'));
+    // --- Event Listener for "Fetch Date" button ---
+    const fetchDateBtn = document.getElementById('fetch-date-btn');
+    if (fetchDateBtn) {
+        fetchDateBtn.addEventListener('click', function() {
+            const day = document.querySelector('input[name="log_day"]').value.padStart(2, '0');
+            const month = document.querySelector('input[name="log_month"]').value.padStart(2, '0');
+            const year = document.querySelector('input[name="log_year"]').value;
+            if (day && month && year) {
+                const dateStr = `${year}/${month}/${day}`;
+                window.location.href = 'index.php?date=' + dateStr;
+            }
+        });
     }
 
-    // --- Handle removing intervals using event delegation ---
+    // --- Event Listener for removing intervals ---
     const formCard = document.getElementById('log-form-card');
     if (formCard) {
         formCard.addEventListener('click', function(e) {

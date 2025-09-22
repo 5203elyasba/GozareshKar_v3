@@ -11,10 +11,22 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 // --- Data Fetching for Edit Mode ---
 $log_date_jalali = $_GET['date'] ?? '';
 $work_logs = [];
-$break_logs = [];
+$total_break_minutes = 0;
 $is_editing = !empty($log_date_jalali);
 
+// Default date values
+$log_date_day = '';
+$log_date_month = '';
+$log_date_year = '';
+
 if ($is_editing) {
+    $date_parts = explode('/', $log_date_jalali);
+    if(count($date_parts) === 3) {
+        $log_date_year = $date_parts[0];
+        $log_date_month = $date_parts[1];
+        $log_date_day = $date_parts[2];
+    }
+
     $gregorian_date_obj = JalaliDate::fromJalaliToDateTime($log_date_jalali);
     if ($gregorian_date_obj) {
         $gregorian_date_str = $gregorian_date_obj->format('Y-m-d');
@@ -26,14 +38,11 @@ if ($is_editing) {
         $all_logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($all_logs as $log) {
-            $log_data = [
-                'start' => date('H:i', strtotime($log['start_time'])),
-                'end' => date('H:i', strtotime($log['end_time']))
-            ];
             if ($log['log_type'] === 'work') {
-                $work_logs[] = $log_data;
+                $work_logs[] = ['start' => date('H:i', strtotime($log['start_time'])), 'end' => date('H:i', strtotime($log['end_time']))];
             } else {
-                $break_logs[] = $log_data;
+                $diff = (new DateTime($log['end_time']))->getTimestamp() - (new DateTime($log['start_time']))->getTimestamp();
+                $total_break_minutes += round($diff / 60);
             }
         }
     }
@@ -46,25 +55,20 @@ if ($is_editing) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $is_editing ? 'ویرایش' : 'ثبت'; ?> گزارش</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
     <style> body { background-color: #f8f9fa; } .container { max-width: 800px; } </style>
 </head>
 <body>
     <div class="container my-4">
         <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 rounded">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#">خوش آمدید, <?php echo htmlspecialchars($_SESSION['username']); ?>!</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+             <div class="container-fluid">
+                <a class="navbar-brand" href="index.php">خوش آمدید, <?php echo htmlspecialchars($_SESSION['username']); ?>!</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav"><span class="navbar-toggler-icon"></span></button>
                 <div class="collapse navbar-collapse" id="main-nav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item"><a class="nav-link" href="reports.php">گزارش‌ها</a></li>
                         <li class="nav-item"><a class="nav-link" href="leave.php">مدیریت مرخصی</a></li>
                         <li class="nav-item"><a class="nav-link" href="change_password.php">تغییر رمز</a></li>
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                            <li class="nav-item"><a class="nav-link" href="admin.php">پنل مدیریت</a></li>
-                        <?php endif; ?>
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?><li class="nav-item"><a class="nav-link" href="admin.php">پنل مدیریت</a></li><?php endif; ?>
                     </ul>
                     <a href="logout.php" class="btn btn-danger">خروج</a>
                 </div>
@@ -74,10 +78,15 @@ if ($is_editing) {
         <div class="card" id="log-form-card">
             <div class="card-header fs-5"><?php echo $is_editing ? 'ویرایش گزارش روز ' . htmlspecialchars($log_date_jalali) : 'ثبت گزارش جدید'; ?></div>
             <div class="card-body">
-                <form action="submit_log.php" method="post">
+                <form action="submit_log.php" method="post" id="log-form">
                     <div class="mb-3">
-                        <label for="log_date" class="form-label">تاریخ</label>
-                        <input type="text" class="form-control" id="log_date" name="log_date" value="<?php echo htmlspecialchars($log_date_jalali); ?>" placeholder="برای انتخاب تاریخ کلیک کنید" required>
+                        <label class="form-label">تاریخ</label>
+                        <div class="row g-2 align-items-center">
+                            <div class="col"><input type="number" class="form-control" name="log_day" placeholder="روز" min="1" max="31" value="<?php echo $log_date_day; ?>" required></div>
+                            <div class="col"><input type="number" class="form-control" name="log_month" placeholder="ماه" min="1" max="12" value="<?php echo $log_date_month; ?>" required></div>
+                            <div class="col"><input type="number" class="form-control" name="log_year" placeholder="سال" min="1400" max="1500" value="<?php echo $log_date_year; ?>" required></div>
+                            <div class="col-auto"><button type="button" id="fetch-date-btn" class="btn btn-secondary">بررسی تاریخ</button></div>
+                        </div>
                     </div>
                     <hr>
                     <h5>بازه های زمانی کاری</h5>
@@ -90,23 +99,18 @@ if ($is_editing) {
                     </div>
                     <button type="button" class="btn btn-outline-success mt-2" id="add-interval">افزودن بازه کاری +</button>
                     <hr>
-                    <h5>زمان‌های استراحت</h5>
-                    <div id="break-intervals-container">
-                        <?php foreach ($break_logs as $log): ?>
-                            <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">شروع استراحت</label><input type="text" class="form-control time-input" name="break_start_time[]" value="<?php echo $log['start']; ?>"></div><div class="col-md"><label class="form-label">پایان استراحت</label><input type="text" class="form-control time-input" name="break_end_time[]" value="<?php echo $log['end']; ?>"></div><div class="col-md-auto"><button type="button" class="btn btn-danger remove-interval">-</button></div></div>
-                        <?php endforeach; ?>
+                    <h5>زمان استراحت</h5>
+                    <div class="mb-3">
+                        <label for="total_break_minutes" class="form-label">مجموع زمان استراحت در این روز (به دقیقه)</label>
+                        <input type="number" class="form-control" id="total_break_minutes" name="total_break_minutes" value="<?php echo $total_break_minutes; ?>" placeholder="مثلا: 30">
                     </div>
-                    <button type="button" class="btn btn-outline-warning mt-2" id="add-break-interval">افزودن زمان استراحت +</button>
                     <hr>
                     <div class="d-grid"><button type="submit" class="btn btn-primary btn-lg"><?php echo $is_editing ? 'ذخیره تغییرات' : 'ثبت گزارش'; ?></button></div>
                 </form>
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
-    <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     <script src="https://unpkg.com/imask"></script>
     <script src="main.js"></script>
 </body>

@@ -43,7 +43,6 @@ $leave_remaining = $annual_leave_total - $leave_used_count;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مدیریت مرخصی</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
     <style> body { background-color: #f8f9fa; } .container { max-width: 800px; } </style>
 </head>
 <body>
@@ -51,25 +50,10 @@ $leave_remaining = $annual_leave_total - $leave_used_count;
     <h2 class="mb-4">مدیریت مرخصی</h2>
 
     <!-- Leave Balance Summary -->
-    <div class="row text-center mb-4">
-        <div class="col">
-            <div class="card"><div class="card-body">
-                <h5 class="card-title">مرخصی کل (سالانه)</h5>
-                <p class="fs-4 fw-bold"><?php echo $annual_leave_total; ?> روز</p>
-            </div></div>
-        </div>
-        <div class="col">
-            <div class="card bg-warning"><div class="card-body">
-                <h5 class="card-title">استفاده شده</h5>
-                <p class="fs-4 fw-bold"><?php echo $leave_used_count; ?> روز</p>
-            </div></div>
-        </div>
-        <div class="col">
-            <div class="card bg-success text-white"><div class="card-body">
-                <h5 class="card-title">باقیمانده</h5>
-                <p class="fs-4 fw-bold"><?php echo $leave_remaining; ?> روز</p>
-            </div></div>
-        </div>
+    <div class="row text-center mb-4 g-3">
+        <div class="col-md-4"><div class="card"><div class="card-body"><h5 class="card-title">مرخصی کل</h5><p class="fs-4 fw-bold"><?php echo $annual_leave_total; ?> روز</p></div></div></div>
+        <div class="col-md-4"><div class="card bg-warning"><div class="card-body"><h5 class="card-title">استفاده شده</h5><p class="fs-4 fw-bold"><?php echo $leave_used_count; ?> روز</p></div></div></div>
+        <div class="col-md-4"><div class="card bg-success text-white"><div class="card-body"><h5 class="card-title">باقیمانده</h5><p class="fs-4 fw-bold"><?php echo $leave_remaining; ?> روز</p></div></div></div>
     </div>
 
     <!-- Leave Request Form -->
@@ -81,8 +65,12 @@ $leave_remaining = $annual_leave_total - $leave_used_count;
             <form action="handle_leave_request.php" method="post">
                 <div class="row g-2">
                     <div class="col-md">
-                        <label for="leave_date" class="form-label">تاریخ مرخصی</label>
-                        <input type="text" class="form-control" id="leave_date" name="leave_date" required>
+                        <label for="leave_date" class="form-label">تاریخ مرخصی (با فرمت روز/ماه/سال)</label>
+                        <div class="row g-2">
+                            <div class="col"><input type="number" class="form-control" name="leave_day" placeholder="روز" min="1" max="31" required></div>
+                            <div class="col"><input type="number" class="form-control" name="leave_month" placeholder="ماه" min="1" max="12" required></div>
+                            <div class="col"><input type="number" class="form-control" name="leave_year" placeholder="سال" min="1400" required></div>
+                        </div>
                     </div>
                     <div class="col-md">
                          <label for="reason" class="form-label">توضیح (اختیاری)</label>
@@ -114,18 +102,7 @@ $leave_remaining = $annual_leave_total - $leave_used_count;
             <?php endif; ?>
         </div>
     </div>
-     <div class="mt-3"><a href="index.php">بازگشت به صفحه اصلی</a></div>
+     <div class="mt-3"><a href="index.php" class="btn btn-secondary">بازگشت به صفحه اصلی</a></div>
 </div>
-
-<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
-<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        new persianDatepicker(document.getElementById('leave_date'), {
-            format: 'YYYY/MM/DD',
-            autoClose: true
-        });
-    });
-</script>
 </body>
 </html>

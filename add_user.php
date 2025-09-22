@@ -44,6 +44,10 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || !isset($_S
                         <label for="daily_hours_goal" class="form-label">ساعات کاری موظفی (روزانه)</label>
                         <input type="number" step="0.1" class="form-control" id="daily_hours_goal" name="daily_hours_goal" value="8" required>
                     </div>
+                    <div class="mb-3">
+                        <label for="annual_leave_days" class="form-label">مرخصی سالانه (روز)</label>
+                        <input type="number" class="form-control" id="annual_leave_days" name="annual_leave_days" value="26" required>
+                    </div>
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                          <a href="admin.php" class="btn btn-secondary">انصراف</a>
                         <button type="submit" class="btn btn-primary">افزودن کاربر</button>

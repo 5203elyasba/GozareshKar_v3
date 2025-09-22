@@ -15,7 +15,5 @@ try {
 }
 
 // --- Start Session ---
-// It's good practice to start the session in a central config file
-// that is included on all secure pages.
 session_start();
 ?>

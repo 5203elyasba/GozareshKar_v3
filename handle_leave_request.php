@@ -10,8 +10,12 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $user_id = $_SESSION['id'];
-    $leave_date_jalali = trim($_POST['leave_date']);
     $reason = trim($_POST['reason']);
+
+    $day = str_pad((int)$_POST['leave_day'], 2, '0', STR_PAD_LEFT);
+    $month = str_pad((int)$_POST['leave_month'], 2, '0', STR_PAD_LEFT);
+    $year = (int)$_POST['leave_year'];
+    $leave_date_jalali = "{$year}/{$month}/{$day}";
 
     // --- Validation ---
     if (empty($leave_date_jalali)) {
