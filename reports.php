@@ -69,6 +69,13 @@ try {
 
 } catch (PDOException $e) { die('<div class="alert alert-danger">خطا در دریافت اطلاعات.</div>'); }
 
+$grand_total_deficit_seconds = 0;
+foreach ($all_events as $event) {
+    if ($event['type'] === 'work_day') {
+        $grand_total_deficit_seconds += ($event['data']['total_seconds'] - $standard_work_seconds);
+    }
+}
+
 function format_seconds_to_hours($seconds) {
     $sign = $seconds < 0 ? '-' : '';
     $seconds = abs($seconds);
@@ -84,7 +91,7 @@ function format_seconds_to_hours($seconds) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>گزارش جامع برای <?php echo htmlspecialchars($viewed_user_info['username']); ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    <style> body { background-color: #f8f9fa; } .container { max-width: 900px; } </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container my-4">

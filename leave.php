@@ -43,7 +43,7 @@ $leave_remaining = $annual_leave_total - $leave_used_count;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مدیریت مرخصی</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    <style> body { background-color: #f8f9fa; } .container { max-width: 800px; } </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container my-4">

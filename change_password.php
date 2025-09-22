@@ -14,7 +14,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تغییر رمز عبور</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    <style> body { background-color: #f8f9fa; } .container { max-width: 600px; } </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container mt-5">

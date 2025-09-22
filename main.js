@@ -72,8 +72,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Event Listeners for adding intervals ---
     const addWorkBtn = document.getElementById('add-interval');
     const workContainer = document.getElementById('time-intervals-container');
+
+    function checkIntervalLimit() {
+        const intervalCount = workContainer.querySelectorAll('.row').length;
+        addWorkBtn.disabled = intervalCount >= 2;
+    }
+
     if (addWorkBtn && workContainer) {
-        addWorkBtn.addEventListener('click', () => addWorkInterval(workContainer));
+        addWorkBtn.addEventListener('click', () => {
+            addWorkInterval(workContainer);
+            checkIntervalLimit();
+        });
     }
 
     // --- Event Listener for "Fetch Date" button ---
@@ -90,13 +99,70 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // --- Form Persistence using localStorage ---
+    const form = document.getElementById('log-form');
+    const dayInputForPersistence = form.querySelector('input[name="log_day"]');
+    const monthInputForPersistence = form.querySelector('select[name="log_month"]');
+    const yearInputForPersistence = form.querySelector('input[name="log_year"]');
+
+    function saveFormState() {
+        const firstStartTime = document.querySelector('input[name="start_time[]"]');
+        const state = {
+            day: dayInputForPersistence.value,
+            month: monthInputForPersistence.value,
+            year: yearInputForPersistence.value,
+            startTime: firstStartTime ? firstStartTime.value : '',
+            timestamp: new Date().getTime()
+        };
+        localStorage.setItem('formState', JSON.stringify(state));
+    }
+
+    function loadFormState() {
+        const savedState = localStorage.getItem('formState');
+        if (savedState) {
+            const state = JSON.parse(savedState);
+            const now = new Date();
+            const savedDate = new Date(state.timestamp);
+
+            // Clear if saved data is from a previous day
+            if (now.getDate() !== savedDate.getDate() || now.getMonth() !== savedDate.getMonth() || now.getFullYear() !== savedDate.getFullYear()) {
+                localStorage.removeItem('formState');
+                return;
+            }
+
+            // Repopulate form
+            dayInputForPersistence.value = state.day;
+            monthInputForPersistence.value = state.month;
+            yearInputForPersistence.value = state.year;
+            const firstStartTime = document.querySelector('input[name="start_time[]"]');
+            if (firstStartTime) {
+                firstStartTime.value = state.startTime;
+            }
+            updateMaxDays(); //
+        }
+    }
+
+    // Don't load state if we are in edit mode from a URL
+    if (!new URLSearchParams(window.location.search).has('date')) {
+        loadFormState();
+    }
+
+    if(form) {
+        form.addEventListener('input', saveFormState);
+    }
+
+
     // --- Event Listener for removing intervals ---
     const formCard = document.getElementById('log-form-card');
     if (formCard) {
         formCard.addEventListener('click', function(e) {
             if (e.target && e.target.classList.contains('remove-interval')) {
                 e.target.closest('.row').remove();
+                checkIntervalLimit(); // Re-check limit after removing
             }
         });
     }
+
+    // Initial check on page load
+    checkIntervalLimit();
 });

@@ -1,0 +1,102 @@
+/* Global Styles */
+body {
+    background-color: #003e49;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Container and Card Styling */
+.container {
+    max-width: 850px;
+}
+
+.card {
+    background-color: #004b57;
+    border: 1px solid #005f6b;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: #005f6b;
+    color: #ffffff;
+    font-weight: 500;
+    border-bottom: 1px solid #005f6b;
+}
+
+/* Form Styling */
+.form-label {
+    color: #c0c0c0;
+}
+
+.form-control, .form-select {
+    background-color: #003740;
+    color: #ffffff;
+    border: 1px solid #005f6b;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #003740;
+    color: #ffffff;
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.25rem rgba(23, 162, 184, 0.25);
+}
+
+.form-control::placeholder {
+    color: #888;
+}
+
+/* Table Styling */
+.table {
+    color: #e0e0e0;
+}
+
+.table-striped>tbody>tr:nth-of-type(odd)>* {
+    --bs-table-accent-bg: rgba(0, 0, 0, 0.15);
+}
+
+.table-hover>tbody>tr:hover>* {
+    --bs-table-accent-bg: rgba(0, 0, 0, 0.25);
+}
+
+/* Button Styling */
+.btn-primary {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+.btn-primary:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+/* Link and Navbar Styling */
+a {
+    color: #17a2b8;
+}
+a:hover {
+    color: #138496;
+}
+
+.navbar {
+    background-color: #004b57 !important;
+    border: 1px solid #005f6b;
+}
+
+.navbar-brand, .nav-link {
+    color: #ffffff !important;
+}
+.nav-link:hover {
+    color: #e0e0e0 !important;
+}
+
+.login-container {
+    background-color: #004b57;
+    border: 1px solid #005f6b;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}

@@ -55,7 +55,7 @@ if ($is_editing) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $is_editing ? 'ویرایش' : 'ثبت'; ?> گزارش</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    <style> body { background-color: #f8f9fa; } .container { max-width: 800px; } </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container my-4">
@@ -76,20 +76,35 @@ if ($is_editing) {
         </nav>
 
         <div class="card" id="log-form-card">
-            <div class="card-header fs-5"><?php echo $is_editing ? 'ویرایش گزارش روز ' . htmlspecialchars($log_date_jalali) : 'ثبت گزارش جدید'; ?></div>
+            <div class="card-header fs-5"><?php echo $is_editing ? 'ویرایش گزارش روز ' . htmlspecialchars($log_date_jalali) : 'ثبت گزارش روزانه'; ?></div>
             <div class="card-body">
                 <form action="submit_log.php" method="post" id="log-form">
                     <div class="mb-3">
                         <label class="form-label">تاریخ</label>
                         <div class="row g-2 align-items-center">
                             <div class="col"><input type="number" class="form-control" name="log_day" placeholder="روز" min="1" max="31" value="<?php echo $log_date_day; ?>" required></div>
-                            <div class="col"><input type="number" class="form-control" name="log_month" placeholder="ماه" min="1" max="12" value="<?php echo $log_date_month; ?>" required></div>
+                            <div class="col">
+                                <select class="form-select" name="log_month" required>
+                                    <option value="1" <?php if($log_date_month == 1) echo 'selected'; ?>>فروردین</option>
+                                    <option value="2" <?php if($log_date_month == 2) echo 'selected'; ?>>اردیبهشت</option>
+                                    <option value="3" <?php if($log_date_month == 3) echo 'selected'; ?>>خرداد</option>
+                                    <option value="4" <?php if($log_date_month == 4) echo 'selected'; ?>>تیر</option>
+                                    <option value="5" <?php if($log_date_month == 5) echo 'selected'; ?>>مرداد</option>
+                                    <option value="6" <?php if($log_date_month == 6) echo 'selected'; ?>>شهریور</option>
+                                    <option value="7" <?php if($log_date_month == 7) echo 'selected'; ?>>مهر</option>
+                                    <option value="8" <?php if($log_date_month == 8) echo 'selected'; ?>>آبان</option>
+                                    <option value="9" <?php if($log_date_month == 9) echo 'selected'; ?>>آذر</option>
+                                    <option value="10" <?php if($log_date_month == 10) echo 'selected'; ?>>دی</option>
+                                    <option value="11" <?php if($log_date_month == 11) echo 'selected'; ?>>بهمن</option>
+                                    <option value="12" <?php if($log_date_month == 12) echo 'selected'; ?>>اسفند</option>
+                                </select>
+                            </div>
                             <div class="col"><input type="number" class="form-control" name="log_year" placeholder="سال" min="1400" max="1500" value="<?php echo $log_date_year; ?>" required></div>
                             <div class="col-auto"><button type="button" id="fetch-date-btn" class="btn btn-secondary">بررسی تاریخ</button></div>
                         </div>
                     </div>
                     <hr>
-                    <h5>بازه های زمانی کاری</h5>
+                    <h5>زمان های حضور</h5>
                     <div id="time-intervals-container">
                         <?php if (empty($work_logs)): ?>
                             <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">ساعت شروع</label><input type="text" class="form-control time-input" name="start_time[]" placeholder="HH:MM" required></div><div class="col-md"><label class="form-label">ساعت پایان</label><input type="text" class="form-control time-input" name="end_time[]" placeholder="HH:MM" required></div><div class="col-md-auto"></div></div>
@@ -97,7 +112,7 @@ if ($is_editing) {
                             <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">ساعت شروع</label><input type="text" class="form-control time-input" name="start_time[]" value="<?php echo $log['start']; ?>" required></div><div class="col-md"><label class="form-label">ساعت پایان</label><input type="text" class="form-control time-input" name="end_time[]" value="<?php echo $log['end']; ?>" required></div><div class="col-md-auto"><button type="button" class="btn btn-danger remove-interval">-</button></div></div>
                         <?php endforeach; endif; ?>
                     </div>
-                    <button type="button" class="btn btn-outline-success mt-2" id="add-interval">افزودن بازه کاری +</button>
+                    <button type="button" class="btn btn-outline-success mt-2" id="add-interval">افزودن بازه حضور جدید +</button>
                     <hr>
                     <h5>زمان استراحت</h5>
                     <div class="mb-3">
