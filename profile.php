@@ -8,9 +8,14 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 }
 
 // User data from session
+$user_id = $_SESSION["id"];
 $username = $_SESSION["username"];
 $full_name = $_SESSION["full_name"] ?? 'کاربر'; // Fallback
 $role = $_SESSION["role"];
+
+require_once 'ReportCalculator.php';
+$calculator = new ReportCalculator($pdo);
+$report_data = $calculator->calculateForUser($user_id);
 
 ?>
 
@@ -27,6 +32,34 @@ $role = $_SESSION["role"];
 <body>
     <div class="container my-5">
         <?php if(file_exists('nav.php')) { require_once 'nav.php'; } ?>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">خلاصه گزارش عملکرد</h5>
+            </div>
+            <div class="card-body">
+                <?php if ($report_data['success']): ?>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <h6>کل ساعات کاری</h6>
+                            <p class="fs-4 fw-bold"><?php echo $report_data['total_work_hours']; ?></p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>وضعیت اضافه/کسر کار (ساعت)</h6>
+                            <p class="fs-4 fw-bold <?php echo ($report_data['total_overtime_undertim_hours'] >= 0) ? 'text-success' : 'text-danger'; ?>">
+                                <?php echo $report_data['total_overtime_undertim_hours']; ?>
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>مرخصی باقی‌مانده (روز)</h6>
+                            <p class="fs-4 fw-bold"><?php echo $report_data['remaining_leave_days']; ?></p>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="alert alert-warning"><?php echo htmlspecialchars($report_data['error']); ?></div>
+                <?php endif; ?>
+            </div>
+        </div>
 
         <?php
         // Display success/error messages

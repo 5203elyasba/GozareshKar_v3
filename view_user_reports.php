@@ -17,6 +17,10 @@ if (!$user_id) {
 $user_full_name = 'کاربر یافت نشد';
 $logs_by_date = [];
 
+require_once 'ReportCalculator.php';
+$calculator = new ReportCalculator($pdo);
+$report_data = $calculator->calculateForUser($user_id);
+
 try {
     // Fetch user's full name
     $user_stmt = $pdo->prepare("SELECT full_name FROM users WHERE id = :id");
@@ -70,6 +74,35 @@ try {
 
         <h3 class="mb-4">گزارشات: <?php echo htmlspecialchars($user_full_name); ?></h3>
 
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">خلاصه گزارش عملکرد کلی</h5>
+            </div>
+            <div class="card-body">
+                <?php if ($report_data['success']): ?>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <h6>کل ساعات کاری</h6>
+                            <p class="fs-4 fw-bold"><?php echo $report_data['total_work_hours']; ?></p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>وضعیت اضافه/کسر کار (ساعت)</h6>
+                            <p class="fs-4 fw-bold <?php echo ($report_data['total_overtime_undertim_hours'] >= 0) ? 'text-success' : 'text-danger'; ?>">
+                                <?php echo $report_data['total_overtime_undertim_hours']; ?>
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>مرخصی باقی‌مانده (روز)</h6>
+                            <p class="fs-4 fw-bold"><?php echo $report_data['remaining_leave_days']; ?></p>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="alert alert-warning"><?php echo htmlspecialchars($report_data['error']); ?></div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <h4 class="mb-3">جزئیات روزانه</h4>
         <?php if (empty($logs_by_date)): ?>
             <div class="alert alert-info">هیچ گزارشی برای این کاربر ثبت نشده است.</div>
         <?php else: ?>
