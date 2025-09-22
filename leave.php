@@ -54,36 +54,37 @@ $log_date_day = $today_parts[2];
     <div class="card mb-4">
         <div class="card-header fw-bold">ثبت درخواست مرخصی جدید</div>
         <div class="card-body">
-             <?php if(isset($_GET['error'])): ?><div class="alert alert-danger"><?php echo htmlspecialchars($_GET['error']); ?></div><?php endif; ?>
-             <?php if(isset($_GET['success'])): ?><div class="alert alert-success">مرخصی با موفقیت ثبت شد.</div><?php endif; ?>
-            <form action="handle_leave_request.php" method="post">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-7">
-                        <label class="form-label">تاریخ مرخصی</label>
-                        <div class="row g-2">
-                            <div class="col">
-                                <div class="custom-number-input"><button type="button" class="btn btn-decrement">-</button><input type="text" inputmode="numeric" class="form-control" name="leave_day" value="<?php echo $log_date_day; ?>" required><button type="button" class="btn btn-increment">+</button></div>
-                            </div>
-                            <div class="col-5">
-                                 <select class="form-select" name="leave_month" required>
-                                    <?php for($m=1; $m<=12; $m++): ?>
-                                    <option value="<?php echo $m; ?>" <?php if($log_date_month == $m) echo 'selected'; ?>><?php echo ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"][$m-1]; ?></option>
-                                    <?php endfor; ?>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <div class="custom-number-input"><button type="button" class="btn btn-decrement">-</button><input type="text" inputmode="numeric" class="form-control" name="leave_year" value="<?php echo $log_date_year; ?>" required><button type="button" class="btn btn-increment">+</button></div>
+            <div class="alert alert-warning">این بخش در دست بروزرسانی است و فعلا غیرفعال می‌باشد.</div>
+            <form>
+                <fieldset disabled>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-7">
+                            <label class="form-label">تاریخ مرخصی</label>
+                            <div class="row g-2">
+                                <div class="col">
+                                    <div class="custom-number-input"><button type="button" class="btn btn-decrement">-</button><input type="text" class="form-control" value="<?php echo $log_date_day; ?>"><button type="button" class="btn btn-increment">+</button></div>
+                                </div>
+                                <div class="col-5">
+                                    <select class="form-select">
+                                        <?php for($m=1; $m<=12; $m++): ?>
+                                        <option value="<?php echo $m; ?>" <?php if($log_date_month == $m) echo 'selected'; ?>><?php echo ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"][$m-1]; ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <div class="custom-number-input"><button type="button" class="btn btn-decrement">-</button><input type="text" class="form-control" value="<?php echo $log_date_year; ?>"><button type="button" class="btn btn-increment">+</button></div>
+                                </div>
                             </div>
                         </div>
+                        <div class="col-md-3">
+                            <label class="form-label">توضیح</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">ثبت</button>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                         <label for="reason" class="form-label">توضیح</label>
-                        <input type="text" class="form-control" id="reason" name="reason">
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">ثبت</button>
-                    </div>
-                </div>
+                </fieldset>
             </form>
         </div>
     </div>

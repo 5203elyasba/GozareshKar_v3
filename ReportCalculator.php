@@ -6,7 +6,7 @@ class ReportCalculator {
         $this->pdo = $pdo;
     }
 
-    public function calculateForUser(int $user_id) {
+    public function calculateForUser(int $user_id, ?string $start_date = null, ?string $end_date = null) {
         try {
             // Fetch user base data
             $user_sql = "SELECT daily_hours_goal, annual_leave_days FROM users WHERE id = :id";
@@ -18,16 +18,33 @@ class ReportCalculator {
                 return ['error' => 'User not found'];
             }
 
-            // Fetch all time logs
-            $time_sql = "SELECT log_date, start_time, end_time, log_type FROM time_logs WHERE user_id = :user_id";
+            // --- Build dynamic queries based on date range ---
+            $date_condition_time = '';
+            $date_condition_leave = '';
+            $params = ['user_id' => $user_id];
+
+            if ($start_date && $end_date) {
+                $date_condition_time = "AND log_date BETWEEN :start_date AND :end_date";
+                $date_condition_leave = "AND leave_date BETWEEN :start_date AND :end_date";
+                $params['start_date'] = $start_date;
+                $params['end_date'] = $end_date;
+            }
+
+            // Fetch all time logs within the range
+            $time_sql = "SELECT log_date, start_time, end_time, log_type FROM time_logs WHERE user_id = :user_id $date_condition_time";
             $time_stmt = $this->pdo->prepare($time_sql);
-            $time_stmt->execute(['user_id' => $user_id]);
+            $time_stmt->execute($params);
             $time_logs = $time_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Fetch all leave logs
-            $leave_sql = "SELECT COUNT(*) as count FROM leave_logs WHERE user_id = :user_id";
+            // Fetch all leave logs (use a different params array for leave query)
+            $leave_params = ['user_id' => $user_id];
+            if ($start_date && $end_date) {
+                $leave_params['start_date'] = $start_date;
+                $leave_params['end_date'] = $end_date;
+            }
+            $leave_sql = "SELECT COUNT(*) as count FROM leave_logs WHERE user_id = :user_id $date_condition_leave";
             $leave_stmt = $this->pdo->prepare($leave_sql);
-            $leave_stmt->execute(['user_id' => $user_id]);
+            $leave_stmt->execute($leave_params);
             $leave_count = $leave_stmt->fetchColumn();
 
             // --- Calculations ---
