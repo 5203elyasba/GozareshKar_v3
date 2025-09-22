@@ -13,77 +13,85 @@ require_once "../includes/JalaliDate.php";
 // Check if the request method is POST
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    // --- Data Validation ---
+    // --- Data Retrieval ---
     $log_date_str = trim($_POST["log_date"]);
-    $start_times = $_POST["start_time"];
-    $end_times = $_POST["end_time"];
     $user_id = $_SESSION["id"];
 
-    // Basic validation checks
-    if (empty($log_date_str) || empty($start_times) || empty($end_times) || count($start_times) !== count($end_times)) {
+    // Work intervals
+    $work_start_times = $_POST["start_time"] ?? [];
+    $work_end_times = $_POST["end_time"] ?? [];
+
+    // Break intervals
+    $break_start_times = $_POST["break_start_time"] ?? [];
+    $break_end_times = $_POST["break_end_time"] ?? [];
+
+    // --- Validation ---
+    if (empty($log_date_str) || empty($work_start_times) || count($work_start_times) !== count($work_end_times) || count($break_start_times) !== count($break_end_times)) {
         header("location: ../public/index.php?error=validation");
         exit;
     }
 
-    // Convert Jalali date to Gregorian DateTime object
     $gregorian_date_obj = JalaliDate::fromJalaliToDateTime($log_date_str);
-
     if ($gregorian_date_obj === false) {
-        // Handle invalid date format
         header("location: ../public/index.php?error=invalid_date");
         exit;
     }
     $gregorian_date_str = $gregorian_date_obj->format('Y-m-d');
 
-    // Prepare SQL statement for insertion
-    $sql = "INSERT INTO time_logs (user_id, log_date, start_time, end_time) VALUES (:user_id, :log_date, :start_time, :end_time)";
+    // --- Database Insertion ---
+    $sql = "INSERT INTO time_logs (user_id, log_date, start_time, end_time, log_type) VALUES (:user_id, :log_date, :start_time, :end_time, :log_type)";
 
     try {
         $pdo->beginTransaction();
-
         $stmt = $pdo->prepare($sql);
 
-        // Loop through each time interval and insert it into the database
-        for ($i = 0; $i < count($start_times); $i++) {
-            $start = $start_times[$i];
-            $end = $end_times[$i];
-
-            // More validation
+        // Process WORK intervals
+        for ($i = 0; $i < count($work_start_times); $i++) {
+            $start = $work_start_times[$i];
+            $end = $work_end_times[$i];
             if (empty($start) || empty($end) || strtotime($end) <= strtotime($start)) {
-                // If any interval is invalid, roll back and show an error
-                $pdo->rollBack();
-                header("location: ../public/index.php?error=invalid_interval");
-                exit;
+                throw new Exception("Invalid work interval.");
             }
-
-            // Bind parameters and execute
-            $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-            $stmt->bindParam(":log_date", $gregorian_date_str, PDO::PARAM_STR);
-            $stmt->bindParam(":start_time", $start, PDO::PARAM_STR);
-            $stmt->bindParam(":end_time", $end, PDO::PARAM_STR);
-
-            $stmt->execute();
+            $stmt->execute([
+                ':user_id' => $user_id,
+                ':log_date' => $gregorian_date_str,
+                ':start_time' => $start,
+                ':end_time' => $end,
+                ':log_type' => 'work'
+            ]);
         }
 
-        // If all insertions were successful, commit the transaction
-        $pdo->commit();
+        // Process BREAK intervals
+        for ($i = 0; $i < count($break_start_times); $i++) {
+            $start = $break_start_times[$i];
+            $end = $break_end_times[$i];
+            if (empty($start) || empty($end) || strtotime($end) <= strtotime($start)) {
+                // If a break interval is invalid, we can choose to ignore it or fail the whole transaction.
+                // For now, we'll ignore it to be more user-friendly.
+                continue;
+            }
+            $stmt->execute([
+                ':user_id' => $user_id,
+                ':log_date' => $gregorian_date_str,
+                ':start_time' => $start,
+                ':end_time' => $end,
+                ':log_type' => 'break'
+            ]);
+        }
 
-        // Redirect back with a success message
+        $pdo->commit();
         header("location: ../public/index.php?success=1");
 
     } catch (Exception $e) {
-        // If an error occurred, roll back the transaction
         $pdo->rollBack();
-        // Log the error for debugging: error_log($e->getMessage());
+        // error_log($e->getMessage());
         header("location: ../public/index.php?error=db_error");
     } finally {
-        // Close the statement and connection
         unset($stmt);
         unset($pdo);
     }
 
 } else {
-    // If not a POST request, redirect to the main page
     header("location: ../public/index.php");
     exit;
 }

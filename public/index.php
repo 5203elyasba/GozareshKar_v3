@@ -20,8 +20,8 @@ if (isset($_GET['error'])) {
         <form action="../src/handle_time_log.php" method="post">
             <div class="mb-3">
                 <label for="log_date" class="form-label">تاریخ</label>
-                <input type="text" class="form-control" id="log_date" name="log_date" placeholder="مثال: 1404/05/21" required>
-                <div class="form-text">لطفاً تاریخ را به فرمت شمسی (سال/ماه/روز) وارد کنید. در آینده یک تقویم شمسی در اینجا قرار خواهد گرفت.</div>
+                <input type="text" class="form-control" id="log_date" name="log_date" placeholder="برای انتخاب تاریخ کلیک کنید" required>
+                <div class="form-text">شما می‌توانید تاریخ را به صورت دستی (مثال: 1404/05/21) وارد کنید یا از تقویم انتخاب نمایید.</div>
             </div>
 
             <hr>
@@ -34,11 +34,11 @@ if (isset($_GET['error'])) {
                 <div class="row mb-2 time-interval-row">
                     <div class="col">
                         <label class="form-label">ساعت شروع</label>
-                        <input type="time" class="form-control" name="start_time[]" required>
+                        <input type="text" class="form-control time-input" name="start_time[]" placeholder="HH:MM" required>
                     </div>
                     <div class="col">
                         <label class="form-label">ساعت پایان</label>
-                        <input type="time" class="form-control" name="end_time[]" required>
+                        <input type="text" class="form-control time-input" name="end_time[]" placeholder="HH:MM" required>
                     </div>
                     <div class="col-auto d-flex align-items-end">
                         <!-- This column is for the remove button, intentionally left empty for the first row -->
@@ -46,7 +46,16 @@ if (isset($_GET['error'])) {
                 </div>
             </div>
 
-            <button type="button" class="btn btn-outline-success mt-2" id="add-interval">افزودن بازه جدید +</button>
+            <button type="button" class="btn btn-outline-success mt-2" id="add-interval">افزودن بازه کاری +</button>
+
+            <hr>
+
+            <h5>زمان‌های استراحت / غیرکاری</h5>
+            <p class="form-text text-muted">زمان‌هایی که مشغول به کار نبوده‌اید را وارد کنید. این زمان از مجموع ساعات کاری شما کسر خواهد شد.</p>
+            <div id="break-intervals-container">
+                <!-- Break intervals will be added here by JS -->
+            </div>
+            <button type="button" class="btn btn-outline-warning mt-2" id="add-break-interval">افزودن زمان استراحت +</button>
 
             <hr>
 

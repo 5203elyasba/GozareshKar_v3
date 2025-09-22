@@ -3,50 +3,57 @@ require_once '../templates/header.php';
 require_once '../config/database.php';
 require_once '../includes/JalaliDate.php';
 
-// --- Data Fetching ---
-$user_id = $_SESSION['id'];
-$sql = "SELECT log_date, start_time, end_time FROM time_logs WHERE user_id = :user_id ORDER BY log_date DESC";
+// --- Fetch Settings ---
+$daily_work_hours_standard = 8; // Default value
+try {
+    $sql_settings = "SELECT setting_value FROM settings WHERE setting_key = 'daily_work_hours_standard'";
+    $stmt_settings = $pdo->query($sql_settings);
+    $result = $stmt_settings->fetch(PDO::FETCH_ASSOC);
+    if ($result) {
+        $daily_work_hours_standard = (float)$result['setting_value'];
+    }
+} catch (PDOException $e) { /* Silently fail and use default */ }
+$standard_work_seconds = $daily_work_hours_standard * 3600;
 
+// --- Fetch Time Logs ---
+$user_id = $_SESSION['id'];
+$sql = "SELECT log_date, start_time, end_time, log_type FROM time_logs WHERE user_id = :user_id ORDER BY log_date DESC, start_time ASC";
 try {
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $stmt->execute();
     $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    // A simple error handling
-    die('<div class="alert alert-danger">خطا در دریافت اطلاعات از دیتابیس.</div>');
-}
-
+} catch (PDOException $e) { die('<div class="alert alert-danger">خطا در دریافت اطلاعات از دیتابیس.</div>'); }
 
 // --- Data Processing ---
 $daily_reports = [];
+$grand_total_deficit_seconds = 0;
 foreach ($logs as $log) {
     $date = $log['log_date'];
     if (!isset($daily_reports[$date])) {
-        $daily_reports[$date] = [
-            'intervals' => [],
-            'total_seconds' => 0
-        ];
+        $daily_reports[$date] = ['intervals' => [], 'total_seconds' => 0];
     }
-    // Using strtotime is simple but effective for TIME format
+
     $start_ts = strtotime($log['start_time']);
     $end_ts = strtotime($log['end_time']);
 
-    // Ensure end is after start
     if ($end_ts > $start_ts) {
         $diff = $end_ts - $start_ts;
+        // Add duration for 'work', subtract for 'break'
+        $daily_reports[$date]['total_seconds'] += ($log['log_type'] === 'work' ? $diff : -$diff);
+
         $daily_reports[$date]['intervals'][] = [
             'start' => date('H:i', $start_ts),
-            'end' => date('H:i', $end_ts)
+            'end' => date('H:i', $end_ts),
+            'type' => $log['log_type']
         ];
-        $daily_reports[$date]['total_seconds'] += $diff;
     }
 }
 
-// Standard work hours (8 hours in seconds)
-define('STANDARD_WORK_SECONDS', 8 * 3600);
+foreach ($daily_reports as $report) {
+    $grand_total_deficit_seconds += ($report['total_seconds'] - $standard_work_seconds);
+}
 
-// Helper function to format seconds into a H:i format (e.g., 08:30)
 function format_seconds_to_hours($seconds) {
     $sign = $seconds < 0 ? '-' : '';
     $seconds = abs($seconds);
@@ -58,26 +65,34 @@ function format_seconds_to_hours($seconds) {
 
 <h2 class="mb-4">گزارش ساعات کاری</h2>
 
-<div class="card">
-    <div class="card-header">
-        خلاصه گزارش روزانه
+<div class="card mb-4">
+    <div class="card-header fw-bold">خلاصه کل</div>
+    <div class="card-body">
+        مجموع اضافه کاری / کسری کار شما در کل دوره:
+        <?php
+            $total_formatted = format_seconds_to_hours($grand_total_deficit_seconds);
+            $total_color = $grand_total_deficit_seconds < 0 ? 'text-danger' : 'text-success';
+            echo "<strong class=\"fs-5 {$total_color}\">{$total_formatted}</strong>";
+        ?>
     </div>
+</div>
+
+<div class="card">
+    <div class="card-header">گزارش روزانه</div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-striped table-hover text-center">
                 <thead class="table-dark">
                     <tr>
                         <th>تاریخ</th>
-                        <th>مجموع ساعات کاری</th>
-                        <th>کسری / اضافه کار (نسبت به ۸ ساعت)</th>
+                        <th>مجموع ساعات مفید</th>
+                        <th>کسری / اضافه کار</th>
                         <th>بازه های زمانی ثبت شده</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($daily_reports)): ?>
-                        <tr>
-                            <td colspan="4" class="text-center p-4">هیچ گزارشی برای نمایش وجود ندارد. لطفاً ابتدا ساعات کاری خود را ثبت کنید.</td>
-                        </tr>
+                        <tr><td colspan="4" class="text-center p-4">هیچ گزارشی برای نمایش وجود ندارد.</td></tr>
                     <?php else: ?>
                         <?php foreach ($daily_reports as $date => $report): ?>
                             <tr>
@@ -85,7 +100,7 @@ function format_seconds_to_hours($seconds) {
                                 <td class="align-middle fw-bold"><?php echo format_seconds_to_hours($report['total_seconds']); ?></td>
                                 <td class="align-middle">
                                     <?php
-                                    $deficit = $report['total_seconds'] - STANDARD_WORK_SECONDS;
+                                    $deficit = $report['total_seconds'] - $standard_work_seconds;
                                     $deficit_formatted = format_seconds_to_hours($deficit);
                                     $color = $deficit < 0 ? 'text-danger' : 'text-success';
                                     echo "<span class='fw-bold {$color}'>{$deficit_formatted}</span>";
@@ -93,11 +108,13 @@ function format_seconds_to_hours($seconds) {
                                 </td>
                                 <td class="align-middle">
                                     <?php
-                                    $intervals_str = [];
                                     foreach ($report['intervals'] as $interval) {
-                                        $intervals_str[] = "{$interval['start']} - {$interval['end']}";
+                                        if ($interval['type'] === 'work') {
+                                            echo "<div>{$interval['start']} - {$interval['end']} <span class='badge bg-success'>کاری</span></div>";
+                                        } else {
+                                            echo "<div>{$interval['start']} - {$interval['end']} <span class='badge bg-warning text-dark'>استراحت</span></div>";
+                                        }
                                     }
-                                    echo implode('<br>', $intervals_str);
                                     ?>
                                 </td>
                             </tr>
