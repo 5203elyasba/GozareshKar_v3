@@ -7,6 +7,18 @@ body {
 }
 .container { max-width: 800px; }
 
+/* --- Global Typography & Links on Dark BG --- */
+h1, h2, h3, h4, h5, h6 {
+    color: #e2e8f0; /* A light gray for headings on dark background */
+}
+
+a {
+    color: #63b3ed; /* A light, readable blue */
+}
+a:hover {
+    color: #90cdf4; /* A slightly lighter blue for hover */
+}
+
 /* --- Components --- */
 .card {
     background-color: #ffffff;
