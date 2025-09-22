@@ -21,6 +21,7 @@ if (!$viewed_user_info) die("User not found.");
 $user_work_hours_goal = (float)$viewed_user_info['daily_hours_goal'];
 $annual_leave_total = (int)$viewed_user_info['annual_leave_days'];
 $standard_work_seconds = $user_work_hours_goal * 3600;
+$grand_total_deficit_seconds = 0; // Initialize here to guarantee it exists
 
 // --- Fetch Leave Data ---
 $leave_taken_count = 0;
@@ -69,7 +70,6 @@ try {
 
 } catch (PDOException $e) { die('<div class="alert alert-danger">خطا در دریافت اطلاعات.</div>'); }
 
-$grand_total_deficit_seconds = 0;
 foreach ($all_events as $event) {
     if ($event['type'] === 'work_day') {
         $grand_total_deficit_seconds += ($event['data']['total_seconds'] - $standard_work_seconds);

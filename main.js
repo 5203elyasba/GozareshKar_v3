@@ -12,14 +12,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 lazy: false
             });
-        } catch (e) {
-            console.error("IMask could not be initialized.", e);
-        }
+        } catch (e) { console.error("IMask could not be initialized.", e); }
     }
 
     // --- Date Input Logic ---
     const dayInput = document.querySelector('input[name="log_day"]');
-    const monthInput = document.querySelector('input[name="log_month"]');
+    const monthInput = document.querySelector('select[name="log_month"]');
     const yearInput = document.querySelector('input[name="log_year"]');
 
     function updateMaxDays() {
@@ -30,15 +28,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (month >= 7 && month <= 11) {
             maxDays = 30;
         } else if (month === 12) {
-            // Simple leap year check for Jalali calendar is complex.
-            // A common approximation is that years that have a remainder of 1, 5, 9, 13, 17, 22, 26, 30 when divided by 33 are leap years.
-            // For simplicity here, we'll assume 29 days unless a more precise library is needed later.
             const leap_years_pattern = [1, 5, 9, 13, 17, 22, 26, 30];
-            if(leap_years_pattern.includes(year % 33)) {
-                 maxDays = 30;
-            } else {
-                 maxDays = 29;
-            }
+            maxDays = leap_years_pattern.includes(year % 33) ? 30 : 29;
         }
         dayInput.max = maxDays;
         if (parseInt(dayInput.value, 10) > maxDays) {
@@ -49,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (monthInput && yearInput) {
         monthInput.addEventListener('change', updateMaxDays);
         yearInput.addEventListener('change', updateMaxDays);
-        // Initial check
         updateMaxDays();
     }
 
@@ -72,16 +62,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Event Listeners for adding intervals ---
     const addWorkBtn = document.getElementById('add-interval');
     const workContainer = document.getElementById('time-intervals-container');
-
     function checkIntervalLimit() {
+        if (!workContainer || !addWorkBtn) return;
         const intervalCount = workContainer.querySelectorAll('.row').length;
         addWorkBtn.disabled = intervalCount >= 2;
     }
-
     if (addWorkBtn && workContainer) {
-        addWorkBtn.addEventListener('click', () => {
-            addWorkInterval(workContainer);
-            checkIntervalLimit();
+        addWorkBtn.addEventListener('click', () => { addWorkInterval(workContainer); checkIntervalLimit(); });
+    }
+
+    // --- Event Listener for "Log Now" button ---
+    const logNowBtn = document.getElementById('log-now-btn');
+    if (logNowBtn) {
+        logNowBtn.addEventListener('click', function() {
+            try {
+                const now = new persianDate();
+                dayInput.value = now.date();
+                monthInput.value = now.month();
+                yearInput.value = now.year();
+
+                const timeNow = new Date();
+                const hours = timeNow.getHours().toString().padStart(2, '0');
+                const minutes = timeNow.getMinutes().toString().padStart(2, '0');
+
+                const firstStartTimeInput = document.querySelector('input[name="start_time[]"]');
+                if (firstStartTimeInput) {
+                    firstStartTimeInput.value = `${hours}:${minutes}`;
+                    applyTimeMask(firstStartTimeInput);
+                }
+                updateMaxDays();
+            } catch (e) {
+                console.error("persianDate library is required for this feature.", e);
+                alert("خطا: کتابخانه تاریخ شمسی بارگذاری نشده است.");
+            }
         });
     }
 
@@ -89,68 +102,46 @@ document.addEventListener('DOMContentLoaded', function() {
     const fetchDateBtn = document.getElementById('fetch-date-btn');
     if (fetchDateBtn) {
         fetchDateBtn.addEventListener('click', function() {
-            const day = document.querySelector('input[name="log_day"]').value.padStart(2, '0');
-            const month = document.querySelector('input[name="log_month"]').value.padStart(2, '0');
-            const year = document.querySelector('input[name="log_year"]').value;
-            if (day && month && year) {
-                const dateStr = `${year}/${month}/${day}`;
-                window.location.href = 'index.php?date=' + dateStr;
-            }
+            const day = dayInput.value.padStart(2, '0');
+            const month = monthInput.value.padStart(2, '0');
+            const year = yearInput.value;
+            if (day && month && year) { window.location.href = 'index.php?date=' + `${year}/${month}/${day}`; }
         });
     }
 
     // --- Form Persistence using localStorage ---
     const form = document.getElementById('log-form');
-    const dayInputForPersistence = form.querySelector('input[name="log_day"]');
-    const monthInputForPersistence = form.querySelector('select[name="log_month"]');
-    const yearInputForPersistence = form.querySelector('input[name="log_year"]');
-
     function saveFormState() {
         const firstStartTime = document.querySelector('input[name="start_time[]"]');
         const state = {
-            day: dayInputForPersistence.value,
-            month: monthInputForPersistence.value,
-            year: yearInputForPersistence.value,
+            day: dayInput.value, month: monthInput.value, year: yearInput.value,
             startTime: firstStartTime ? firstStartTime.value : '',
             timestamp: new Date().getTime()
         };
         localStorage.setItem('formState', JSON.stringify(state));
     }
-
     function loadFormState() {
         const savedState = localStorage.getItem('formState');
         if (savedState) {
             const state = JSON.parse(savedState);
             const now = new Date();
             const savedDate = new Date(state.timestamp);
-
-            // Clear if saved data is from a previous day
-            if (now.getDate() !== savedDate.getDate() || now.getMonth() !== savedDate.getMonth() || now.getFullYear() !== savedDate.getFullYear()) {
+            if (now.toDateString() !== savedDate.toDateString()) {
                 localStorage.removeItem('formState');
                 return;
             }
-
-            // Repopulate form
-            dayInputForPersistence.value = state.day;
-            monthInputForPersistence.value = state.month;
-            yearInputForPersistence.value = state.year;
+            dayInput.value = state.day;
+            monthInput.value = state.month;
+            yearInput.value = state.year;
             const firstStartTime = document.querySelector('input[name="start_time[]"]');
-            if (firstStartTime) {
-                firstStartTime.value = state.startTime;
-            }
-            updateMaxDays(); //
+            if (firstStartTime) { firstStartTime.value = state.startTime; }
+            updateMaxDays();
         }
     }
-
-    // Don't load state if we are in edit mode from a URL
     if (!new URLSearchParams(window.location.search).has('date')) {
         loadFormState();
     }
-
-    if(form) {
-        form.addEventListener('input', saveFormState);
-    }
-
+    if(form) { form.addEventListener('input', saveFormState); }
 
     // --- Event Listener for removing intervals ---
     const formCard = document.getElementById('log-form-card');
@@ -158,11 +149,9 @@ document.addEventListener('DOMContentLoaded', function() {
         formCard.addEventListener('click', function(e) {
             if (e.target && e.target.classList.contains('remove-interval')) {
                 e.target.closest('.row').remove();
-                checkIntervalLimit(); // Re-check limit after removing
+                checkIntervalLimit();
             }
         });
     }
-
-    // Initial check on page load
     checkIntervalLimit();
 });

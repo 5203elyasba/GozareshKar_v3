@@ -104,5 +104,13 @@ $leave_remaining = $annual_leave_total - $leave_used_count;
     </div>
      <div class="mt-3"><a href="index.php" class="btn btn-secondary">بازگشت به صفحه اصلی</a></div>
 </div>
+
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<script>
+    // This page doesn't use main.js, so we initialize its datepicker here.
+    // However, the logic was moved to main.js. Let's link main.js instead for consistency.
+</script>
+<script src="main.js"></script>
 </body>
 </html>

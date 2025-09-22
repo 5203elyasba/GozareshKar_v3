@@ -103,7 +103,8 @@ if ($is_editing) {
                                 </select>
                             </div>
                             <div class="col"><input type="number" class="form-control" name="log_year" placeholder="سال" min="1400" max="1500" value="<?php echo $log_date_year; ?>" required></div>
-                            <div class="col-auto"><button type="button" id="fetch-date-btn" class="btn btn-secondary">بررسی تاریخ</button></div>
+                            <div class="col-auto"><button type="button" id="fetch-date-btn" class="btn btn-secondary">بررسی</button></div>
+                            <div class="col-auto"><button type="button" id="log-now-btn" class="btn btn-info">همین الان</button></div>
                         </div>
                     </div>
                     <hr>
@@ -129,6 +130,7 @@ if ($is_editing) {
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
     <script src="https://unpkg.com/imask"></script>
     <script src="main.js"></script>
 </body>

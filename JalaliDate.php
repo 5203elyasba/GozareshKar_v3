@@ -58,10 +58,9 @@ class JalaliDate {
             }
         }
 
-        // Set the time to midday to avoid timezone issues where the date could roll back.
-        $date = new DateTime();
+        // Create the DateTime object with the correct timezone to prevent off-by-one errors.
+        $date = new DateTime('now', new DateTimeZone('Asia/Tehran'));
         $date->setTimestamp($timestamp);
-        $date->setTime(12, 0, 0);
 
         return $date;
     }
