@@ -10,10 +10,10 @@ body {
 /* --- Components --- */
 .card {
     background-color: #ffffff;
+    color: #2d3748; /* Darker text for card content */
     border: none;
     border-radius: 12px;
-    /* Enhanced shadow for floating effect on a dark background */
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.05); /* Enhanced shadow for floating effect */
     margin-bottom: 2rem;
 }
 .card-header {
