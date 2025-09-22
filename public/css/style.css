@@ -1,9 +1,0 @@
-/* Custom styles can go here */
-.remove-interval {
-    height: 38px; /* Align with form input height */
-}
-
-/* Make body take full height for vertical centering if needed */
-html, body {
-    height: 100%;
-}

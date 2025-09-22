@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 21, 2025 at 12:00 PM
+-- Generation Time: Sep 22, 2025 at 12:00 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -14,6 +14,8 @@ SET time_zone = "+00:00";
 --
 -- Database: `employee_tracker`
 --
+CREATE DATABASE IF NOT EXISTS `employee_tracker` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_persian_ci;
+USE `employee_tracker`;
 
 -- --------------------------------------------------------
 
@@ -21,12 +23,13 @@ SET time_zone = "+00:00";
 -- Table structure for table `users`
 --
 
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `full_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_persian_ci DEFAULT NULL,
-  `role` enum('employee','manager','admin') NOT NULL DEFAULT 'employee',
+  `role` enum('employee','admin') NOT NULL DEFAULT 'employee',
+  `daily_hours_goal` float NOT NULL DEFAULT 8,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
@@ -35,9 +38,10 @@ CREATE TABLE `users` (
 --
 -- Dumping data for table `users`
 --
--- For testing purposes, you can uncomment the line below to add a default user.
--- INSERT INTO `users` (`id`, `username`, `password`, `full_name`, `role`) VALUES
--- (1, 'testuser', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'کاربر تستی', 'employee'); -- password is 'password'
+
+INSERT IGNORE INTO `users` (`id`, `username`, `password`, `full_name`, `role`, `daily_hours_goal`) VALUES
+(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ادمین سیستم', 'admin', 8),
+(2, 'testuser', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'کاربر تستی', 'employee', 8);
 
 -- --------------------------------------------------------
 
@@ -45,7 +49,7 @@ CREATE TABLE `users` (
 -- Table structure for table `time_logs`
 --
 
-CREATE TABLE `time_logs` (
+CREATE TABLE IF NOT EXISTS `time_logs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `log_date` date NOT NULL,
@@ -58,24 +62,5 @@ CREATE TABLE `time_logs` (
   KEY `user_id` (`user_id`),
   CONSTRAINT `time_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `settings`
---
-
-CREATE TABLE `settings` (
-  `setting_key` varchar(50) NOT NULL,
-  `setting_value` text DEFAULT NULL,
-  PRIMARY KEY (`setting_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `settings`
---
-
-INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES
-('daily_work_hours_standard', '8');
 
 COMMIT;
