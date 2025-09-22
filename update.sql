@@ -9,9 +9,9 @@
 
 -- اضافه کردن ستون برای ذخیره ساعات کاری موظفی هر کاربر به جدول کاربران
 ALTER TABLE `users`
-ADD COLUMN `daily_hours_goal` float NOT NULL DEFAULT 8 AFTER `role`;
+ADD COLUMN `daily_hours_goal` float NOT NULL DEFAULT 8 COMMENT 'ساعات کاری موظفی روزانه' AFTER `role`;
 
 
 -- اضافه کردن ستون برای تفکیک بین زمان کاری و زمان استراحت به جدول لاگ‌ها
 ALTER TABLE `time_logs`
-ADD COLUMN `log_type` ENUM('work','break') NOT NULL DEFAULT 'work' AFTER `end_time`;
+ADD COLUMN `log_type` ENUM('work','break') NOT NULL DEFAULT 'work' COMMENT 'نوع لاگ: کاری یا استراحت' AFTER `end_time`;

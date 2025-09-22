@@ -68,13 +68,17 @@ function format_seconds_to_hours($seconds) {
     <style> body { background-color: #f8f9fa; } .container { max-width: 900px; } </style>
 </head>
 <body>
-<div class="container mt-5">
-    <nav class="navbar navbar-expand-sm navbar-light bg-light mb-4 rounded">
+<div class="container my-4">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 rounded">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">کاربر: <?php echo htmlspecialchars($_SESSION['username']); ?></a>
-            <div class="collapse navbar-collapse">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="main-nav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link" href="index.php">ثبت/ویرایش گزارش</a></li>
+                    <li class="nav-item"><a class="nav-link" href="change_password.php">تغییر رمز</a></li>
                      <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                         <li class="nav-item"><a class="nav-link" href="admin.php">پنل مدیریت</a></li>
                     <?php endif; ?>
@@ -98,11 +102,11 @@ function format_seconds_to_hours($seconds) {
     </div>
     <div class="card">
         <div class="card-header">گزارش روزانه</div>
-        <div class="card-body">
+        <div class="card-body p-2 p-md-3">
             <div class="table-responsive">
-                <table class="table table-striped table-hover text-center">
+                <table class="table table-striped table-hover text-center small">
                     <thead class="table-dark">
-                        <tr><th>تاریخ</th><th>ساعات مفید</th><th>کسری/اضافه کار</th><th>بازه های زمانی</th></tr>
+                        <tr><th>تاریخ</th><th>ساعات مفید</th><th>کسری/اضافه</th><th>بازه های زمانی</th></tr>
                     </thead>
                     <tbody>
                         <?php if (empty($daily_reports)): ?>
@@ -130,5 +134,6 @@ function format_seconds_to_hours($seconds) {
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

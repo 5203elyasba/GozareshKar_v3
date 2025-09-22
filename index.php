@@ -50,13 +50,17 @@ if ($is_editing) {
     <style> body { background-color: #f8f9fa; } .container { max-width: 800px; } </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <nav class="navbar navbar-expand-sm navbar-light bg-light mb-4 rounded">
+    <div class="container my-4">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 rounded">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#">خوش آمدید, <?php echo htmlspecialchars($_SESSION['username']); ?>!</a>
-                <div class="collapse navbar-collapse">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="main-nav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="reports.php">مشاهده گزارش‌ها</a></li>
+                        <li class="nav-item"><a class="nav-link" href="reports.php">گزارش‌ها</a></li>
+                        <li class="nav-item"><a class="nav-link" href="change_password.php">تغییر رمز</a></li>
                         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                             <li class="nav-item"><a class="nav-link" href="admin.php">پنل مدیریت</a></li>
                         <?php endif; ?>
@@ -66,9 +70,8 @@ if ($is_editing) {
             </div>
         </nav>
 
-        <h2 class="mb-4"><?php echo $is_editing ? 'ویرایش گزارش روز ' . htmlspecialchars($log_date_jalali) : 'ثبت گزارش جدید'; ?></h2>
         <div class="card" id="log-form-card">
-            <div class="card-header"><?php echo $is_editing ? 'ویرایش اطلاعات' : 'فرم ثبت ساعت کاری'; ?></div>
+            <div class="card-header fs-5"><?php echo $is_editing ? 'ویرایش گزارش روز ' . htmlspecialchars($log_date_jalali) : 'ثبت گزارش جدید'; ?></div>
             <div class="card-body">
                 <form action="submit_log.php" method="post">
                     <div class="mb-3">
@@ -79,17 +82,17 @@ if ($is_editing) {
                     <h5>بازه های زمانی کاری</h5>
                     <div id="time-intervals-container">
                         <?php if (empty($work_logs)): ?>
-                            <div class="row mb-2"><div class="col"><label class="form-label">ساعت شروع</label><input type="text" class="form-control time-input" name="start_time[]" placeholder="HH:MM" required></div><div class="col"><label class="form-label">ساعت پایان</label><input type="text" class="form-control time-input" name="end_time[]" placeholder="HH:MM" required></div><div class="col-auto d-flex align-items-end"></div></div>
+                            <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">ساعت شروع</label><input type="text" class="form-control time-input" name="start_time[]" placeholder="HH:MM" required></div><div class="col-md"><label class="form-label">ساعت پایان</label><input type="text" class="form-control time-input" name="end_time[]" placeholder="HH:MM" required></div><div class="col-md-auto"></div></div>
                         <?php else: foreach ($work_logs as $log): ?>
-                            <div class="row mb-2"><div class="col"><label class="form-label">ساعت شروع</label><input type="text" class="form-control time-input" name="start_time[]" value="<?php echo $log['start']; ?>" required></div><div class="col"><label class="form-label">ساعت پایان</label><input type="text" class="form-control time-input" name="end_time[]" value="<?php echo $log['end']; ?>" required></div><div class="col-auto d-flex align-items-end"><button type="button" class="btn btn-danger remove-interval">-</button></div></div>
+                            <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">ساعت شروع</label><input type="text" class="form-control time-input" name="start_time[]" value="<?php echo $log['start']; ?>" required></div><div class="col-md"><label class="form-label">ساعت پایان</label><input type="text" class="form-control time-input" name="end_time[]" value="<?php echo $log['end']; ?>" required></div><div class="col-md-auto"><button type="button" class="btn btn-danger remove-interval">-</button></div></div>
                         <?php endforeach; endif; ?>
                     </div>
                     <button type="button" class="btn btn-outline-success mt-2" id="add-interval">افزودن بازه کاری +</button>
                     <hr>
-                    <h5>زمان‌های استراحت / غیرکاری</h5>
+                    <h5>زمان‌های استراحت</h5>
                     <div id="break-intervals-container">
                         <?php foreach ($break_logs as $log): ?>
-                            <div class="row mb-2"><div class="col"><label class="form-label">شروع استراحت</label><input type="text" class="form-control time-input" name="break_start_time[]" value="<?php echo $log['start']; ?>"></div><div class="col"><label class="form-label">پایان استراحت</label><input type="text" class="form-control time-input" name="break_end_time[]" value="<?php echo $log['end']; ?>"></div><div class="col-auto d-flex align-items-end"><button type="button" class="btn btn-danger remove-interval">-</button></div></div>
+                            <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">شروع استراحت</label><input type="text" class="form-control time-input" name="break_start_time[]" value="<?php echo $log['start']; ?>"></div><div class="col-md"><label class="form-label">پایان استراحت</label><input type="text" class="form-control time-input" name="break_end_time[]" value="<?php echo $log['end']; ?>"></div><div class="col-md-auto"><button type="button" class="btn btn-danger remove-interval">-</button></div></div>
                         <?php endforeach; ?>
                     </div>
                     <button type="button" class="btn btn-outline-warning mt-2" id="add-break-interval">افزودن زمان استراحت +</button>
@@ -100,6 +103,7 @@ if ($is_editing) {
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
     <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     <script src="https://unpkg.com/imask"></script>

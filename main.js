@@ -24,11 +24,11 @@ document.addEventListener('DOMContentLoaded', function() {
             new persianDatepicker(dateInput, {
                 format: 'YYYY/MM/DD',
                 autoClose: true,
-            initialValue: false,
-            onSelect: function(unix) {
-                const selectedDate = new persianDate(unix).format('YYYY/MM/DD');
-                window.location.href = 'index.php?date=' + selectedDate;
-            }
+                initialValue: false,
+                onSelect: function(unix) {
+                    const selectedDate = new persianDate(unix).format('YYYY/MM/DD');
+                    window.location.href = 'index.php?date=' + selectedDate;
+                }
             });
         }
     } catch (e) {
@@ -41,12 +41,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Generic function to add new interval rows ---
     function addInterval(container, namePrefix) {
         const newInterval = document.createElement('div');
-        newInterval.classList.add('row', 'mb-2');
-        const label = namePrefix === 'start_time' ? 'کاری' : 'استراحت';
+        newInterval.classList.add('row', 'g-2', 'mb-2', 'align-items-end');
+        const isWork = namePrefix === 'start_time';
+        const label = isWork ? 'کاری' : 'استراحت';
+        const required = isWork ? 'required' : '';
+
         newInterval.innerHTML = `
-            <div class="col"><label class="form-label">شروع ${label}</label><input type="text" class="form-control time-input" name="${namePrefix}[]" placeholder="HH:MM" required></div>
-            <div class="col"><label class="form-label">پایان ${label}</label><input type="text" class="form-control time-input" name="${namePrefix.replace('start', 'end')}[]" placeholder="HH:MM" required></div>
-            <div class="col-auto d-flex align-items-end"><button type="button" class="btn btn-danger remove-interval">-</button></div>
+            <div class="col-md"><label class="form-label">شروع ${label}</label><input type="text" class="form-control time-input" name="${namePrefix}[]" placeholder="HH:MM" ${required}></div>
+            <div class="col-md"><label class="form-label">پایان ${label}</label><input type="text" class="form-control time-input" name="${namePrefix.replace('start', 'end')}[]" placeholder="HH:MM" ${required}></div>
+            <div class="col-md-auto"><button type="button" class="btn btn-danger remove-interval">-</button></div>
         `;
         container.appendChild(newInterval);
         newInterval.querySelectorAll('.time-input').forEach(applyTimeMask);
