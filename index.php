@@ -55,6 +55,11 @@ if ($is_editing) {
         <?php require_once 'nav.php'; ?>
 
         <div class="card" id="log-form-card">
+            <div class="card-body text-center">
+                <a href="quick_log.php" class="btn btn-success btn-lg px-5">ورود سریع (ثبت ساعت کنونی)</a>
+                <hr>
+                <p class="text-muted small">یا فرم زیر را به صورت دستی پر کنید</p>
+            </div>
             <div class="card-header fs-5 fw-bold"><?php echo $is_editing ? 'ویرایش گزارش روز ' . htmlspecialchars($log_date_jalali) : 'ثبت گزارش روزانه'; ?></div>
             <div class="card-body">
                 <form action="submit_log.php" method="post" id="log-form">
