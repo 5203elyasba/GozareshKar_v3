@@ -58,7 +58,12 @@ class JalaliDate {
             }
         }
 
-        return (new DateTime())->setTimestamp($timestamp);
+        // Set the time to midday to avoid timezone issues where the date could roll back.
+        $date = new DateTime();
+        $date->setTimestamp($timestamp);
+        $date->setTime(12, 0, 0);
+
+        return $date;
     }
 
     /**

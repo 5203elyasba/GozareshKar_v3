@@ -14,12 +14,15 @@ $work_logs = [];
 $total_break_minutes = 0;
 $is_editing = !empty($log_date_jalali);
 
-// Default date values
-$log_date_day = '';
-$log_date_month = '';
-$log_date_year = '';
+// Default date values to today
+$jalali_today = JalaliDate::toJalali(date('Y-m-d'));
+$today_parts = explode('/', $jalali_today);
+$log_date_year = $today_parts[0];
+$log_date_month = $today_parts[1];
+$log_date_day = $today_parts[2];
 
 if ($is_editing) {
+    // If editing, overwrite defaults with the date from URL
     $date_parts = explode('/', $log_date_jalali);
     if(count($date_parts) === 3) {
         $log_date_year = $date_parts[0];
