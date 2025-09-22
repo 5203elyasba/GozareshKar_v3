@@ -95,9 +95,7 @@ function format_seconds_to_hours($seconds) {
 </head>
 <body>
 <div class="container my-4">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 rounded">
-        <div class="container-fluid"><a class="navbar-brand" href="#">کاربر: <?php echo htmlspecialchars($_SESSION['username']); ?></a><button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav"><span class="navbar-toggler-icon"></span></button><div class="collapse navbar-collapse" id="main-nav"><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item"><a class="nav-link" href="index.php">ثبت/ویرایش گزارش</a></li><li class="nav-item"><a class="nav-link" href="leave.php">مدیریت مرخصی</a></li><li class="nav-item"><a class="nav-link" href="change_password.php">تغییر رمز</a></li><?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?><li class="nav-item"><a class="nav-link" href="admin.php">پنل مدیریت</a></li><?php endif; ?></ul><a href="logout.php" class="btn btn-danger">خروج</a></div></div>
-    </nav>
+    <?php require_once 'nav.php'; ?>
 
     <h2 class="mb-4">گزارش جامع برای: <span class="text-primary"><?php echo htmlspecialchars($viewed_user_info['username']); ?></span></h2>
     <!-- Summary Cards -->

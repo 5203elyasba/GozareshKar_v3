@@ -41,7 +41,8 @@ $log_date_day = $today_parts[2];
 </head>
 <body>
 <div class="container my-4">
-    <h2 class="mb-4 text-white">مدیریت مرخصی</h2>
+    <?php require_once 'nav.php'; ?>
+    <h2 class="mb-4">مدیریت مرخصی</h2>
 
     <div class="row text-center mb-4 g-3">
         <div class="col-md-4"><div class="card"><div class="card-body"><h5 class="card-title">مرخصی کل</h5><p class="fs-4 fw-bold"><?php echo $annual_leave_total; ?> روز</p></div></div></div>
@@ -103,8 +104,8 @@ $log_date_day = $today_parts[2];
             <?php endif; ?>
         </div>
     </div>
-     <div class="mt-3 text-center"><a href="index.php" class="btn btn-secondary">بازگشت به صفحه اصلی</a></div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="main.js"></script>
 </body>
 </html>

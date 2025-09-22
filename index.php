@@ -52,21 +52,7 @@ if ($is_editing) {
 </head>
 <body>
     <div class="container my-4">
-        <nav class="navbar navbar-expand-lg navbar-light mb-4 rounded">
-             <div class="container-fluid">
-                <a class="navbar-brand" href="index.php">خوش آمدید, <?php echo htmlspecialchars($_SESSION['username']); ?>!</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav"><span class="navbar-toggler-icon"></span></button>
-                <div class="collapse navbar-collapse" id="main-nav">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="reports.php">گزارش‌ها</a></li>
-                        <li class="nav-item"><a class="nav-link" href="leave.php">مرخصی</a></li>
-                        <li class="nav-item"><a class="nav-link" href="change_password.php">تغییر رمز</a></li>
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?><li class="nav-item"><a class="nav-link" href="admin.php">پنل مدیریت</a></li><?php endif; ?>
-                    </ul>
-                    <a href="logout.php" class="btn btn-danger">خروج</a>
-                </div>
-            </div>
-        </nav>
+        <?php require_once 'nav.php'; ?>
 
         <div class="card" id="log-form-card">
             <div class="card-header fs-5 fw-bold"><?php echo $is_editing ? 'ویرایش گزارش روز ' . htmlspecialchars($log_date_jalali) : 'ثبت گزارش روزانه'; ?></div>
@@ -96,9 +82,9 @@ if ($is_editing) {
                     <h5>زمان های حضور</h5>
                     <div id="time-intervals-container">
                         <?php if (empty($work_logs)): ?>
-                            <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">ساعت شروع</label><input type="text" class="form-control time-input" name="start_time[]" placeholder="HH:MM" required></div><div class="col-md"><label class="form-label">ساعت پایان</label><input type="text" class="form-control time-input" name="end_time[]" placeholder="HH:MM" required></div><div class="col-md-auto"></div></div>
+                            <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">ساعت ورود</label><input type="text" class="form-control time-input" name="start_time[]" placeholder="HH:MM" required></div><div class="col-md"><label class="form-label">ساعت خروج</label><input type="text" class="form-control time-input" name="end_time[]" placeholder="HH:MM" required></div><div class="col-md-auto"></div></div>
                         <?php else: foreach ($work_logs as $log): ?>
-                            <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">ساعت شروع</label><input type="text" class="form-control time-input" name="start_time[]" value="<?php echo $log['start']; ?>" required></div><div class="col-md"><label class="form-label">ساعت پایان</label><input type="text" class="form-control time-input" name="end_time[]" value="<?php echo $log['end']; ?>" required></div><div class="col-md-auto"><button type="button" class="btn btn-danger remove-interval">-</button></div></div>
+                            <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">ساعت ورود</label><input type="text" class="form-control time-input" name="start_time[]" value="<?php echo $log['start']; ?>" required></div><div class="col-md"><label class="form-label">ساعت خروج</label><input type="text" class="form-control time-input" name="end_time[]" value="<?php echo $log['end']; ?>" required></div><div class="col-md-auto"><button type="button" class="btn btn-danger remove-interval">-</button></div></div>
                         <?php endforeach; endif; ?>
                     </div>
                     <button type="button" class="btn btn-outline-success mt-2" id="add-interval">افزودن بازه حضور جدید +</button>
