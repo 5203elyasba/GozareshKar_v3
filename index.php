@@ -42,7 +42,7 @@ $log_date_day = $date_parts[2] ?? '';
 </head>
 <body>
     <div class="container my-5">
-        <?php require_once 'nav.php'; ?>
+        <?php require_once 'nav.php'; // Ensure the navigation bar is included ?>
         <div class="card" id="log-form-card">
             <div class="card-header"><?php echo $is_editing ? 'ویرایش گزارش روز ' . htmlspecialchars($log_date_jalali) : 'ثبت گزارش روزانه'; ?></div>
             <div class="card-body">
@@ -51,28 +51,49 @@ $log_date_day = $date_parts[2] ?? '';
                         <label class="form-label fw-bold">تاریخ</label>
                         <div class="row g-2 align-items-center">
                             <div class="col">
-                                <div class="custom-number-input"><button type="button" class="btn btn-decrement">-</button><input type="text" inputmode="numeric" class="form-control" name="log_day" value="<?php echo $log_date_day; ?>" required><button type="button" class="btn btn-increment">+</button></div>
+                                <label for="log_day" class="form-label small">روز</label>
+                                <div class="custom-number-input">
+                                    <button type="button" class="btn btn-decrement">-</button>
+                                    <input type="text" inputmode="numeric" class="form-control text-center" name="log_day" id="log_day" value="<?php echo htmlspecialchars($log_date_day); ?>" required>
+                                    <button type="button" class="btn btn-increment">+</button>
+                                </div>
                             </div>
                             <div class="col-5">
-                                <select class="form-select" name="log_month" required>
+                                <label for="log_month" class="form-label small">ماه</label>
+                                <select class="form-select" name="log_month" id="log_month" required>
                                     <?php for($m=1; $m<=12; $m++): ?>
                                     <option value="<?php echo $m; ?>" <?php if($log_date_month == $m) echo 'selected'; ?>><?php echo ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"][$m-1]; ?></option>
                                     <?php endfor; ?>
                                 </select>
                             </div>
                             <div class="col">
-                                <div class="custom-number-input"><button type="button" class="btn btn-decrement">-</button><input type="text" inputmode="numeric" class="form-control" name="log_year" value="<?php echo $log_date_year; ?>" required><button type="button" class="btn btn-increment">+</button></div>
+                                <label for="log_year" class="form-label small">سال</label>
+                                <div class="custom-number-input">
+                                    <button type="button" class="btn btn-decrement">-</button>
+                                    <input type="text" inputmode="numeric" class="form-control text-center" name="log_year" id="log_year" value="<?php echo htmlspecialchars($log_date_year); ?>" required>
+                                    <button type="button" class="btn btn-increment">+</button>
+                                </div>
                             </div>
-                            <div class="col-auto"><button type="button" id="fetch-date-btn" class="btn btn-outline-secondary">بررسی</button></div>
+                            <div class="col-auto align-self-end">
+                                <button type="button" id="fetch-date-btn" class="btn btn-outline-secondary">بررسی</button>
+                            </div>
                         </div>
                     </div>
                     <hr>
                     <h5 class="fw-bold">زمان های حضور</h5>
                     <div id="time-intervals-container">
                         <?php if (empty($work_logs)): ?>
-                            <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">ساعت ورود</label><input type="text" class="form-control time-input" name="start_time[]" placeholder="HH:MM" required></div><div class="col-md"><label class="form-label">ساعت خروج</label><input type="text" class="form-control time-input" name="end_time[]" placeholder="HH:MM" required></div><div class="col-md-auto"></div></div>
+                            <div class="row g-2 mb-2 align-items-end">
+                                <div class="col-md"><label class="form-label">ساعت ورود</label><input type="text" class="form-control time-input" name="start_time[]" placeholder="HH:MM" required></div>
+                                <div class="col-md"><label class="form-label">ساعت خروج</label><input type="text" class="form-control time-input" name="end_time[]" placeholder="HH:MM" required></div>
+                                <div class="col-md-auto"></div>
+                            </div>
                         <?php else: foreach ($work_logs as $log): ?>
-                            <div class="row g-2 mb-2 align-items-end"><div class="col-md"><label class="form-label">ساعت ورود</label><input type="text" class="form-control time-input" name="start_time[]" value="<?php echo $log['start']; ?>" required></div><div class="col-md"><label class="form-label">ساعت خروج</label><input type="text" class="form-control time-input" name="end_time[]" value="<?php echo $log['end']; ?>" required></div><div class="col-md-auto"><button type="button" class="btn btn-sm btn-danger remove-interval">-</button></div></div>
+                            <div class="row g-2 mb-2 align-items-end">
+                                <div class="col-md"><label class="form-label">ساعت ورود</label><input type="text" class="form-control time-input" name="start_time[]" value="<?php echo htmlspecialchars($log['start']); ?>" required></div>
+                                <div class="col-md"><label class="form-label">ساعت خروج</label><input type="text" class="form-control time-input" name="end_time[]" value="<?php echo htmlspecialchars($log['end']); ?>" required></div>
+                                <div class="col-md-auto"><button type="button" class="btn btn-sm btn-danger remove-interval">-</button></div>
+                            </div>
                         <?php endforeach; endif; ?>
                     </div>
                     <button type="button" class="btn btn-outline-success mt-2" id="add-interval">افزودن بازه حضور جدید +</button>

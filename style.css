@@ -1,7 +1,7 @@
 /* --- Global & Theme --- */
 body {
-    background-color: #f4f7f9;
-    color: #4a5568;
+    background-color: #003e49;
+    color: #a0aec0; /* Lighter text for dark background */
     font-family: 'Vazirmatn', sans-serif;
     direction: rtl;
 }
@@ -12,7 +12,8 @@ body {
     background-color: #ffffff;
     border: none;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    /* Enhanced shadow for floating effect on a dark background */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
     margin-bottom: 2rem;
 }
 .card-header {

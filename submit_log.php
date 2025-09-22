@@ -12,24 +12,20 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit;
 }
 
-// --- Data Retrieval & Date Construction ---
-$day = $_POST['log_day'] ?? '';
-$month = $_POST['log_month'] ?? '';
-$year = $_POST['log_year'] ?? '';
-
-// --- Robust Validation ---
-if (empty($day) || empty($month) || empty($year) || !is_numeric($day) || !is_numeric($month) || !is_numeric($year)) {
-    die("خطا: تاریخ ناقص است. لطفاً روز، ماه و سال را به درستی وارد کنید.");
+// --- Data Retrieval & Validation ---
+if (!isset($_POST['log_day'], $_POST['log_month'], $_POST['log_year'])) {
+    die("خطا: فیلدهای تاریخ ارسال نشده‌اند.");
+}
+if (!is_numeric($_POST['log_day']) || !is_numeric($_POST['log_month']) || !is_numeric($_POST['log_year'])) {
+    die("خطا: مقادیر تاریخ باید عددی باشند.");
 }
 
-$day_int = (int)$day;
-$month_int = (int)$month;
-$year_int = (int)$year;
+$day_int = (int)$_POST['log_day'];
+$month_int = (int)$_POST['log_month'];
+$year_int = (int)$_POST['log_year'];
 
-if (!checkdate($month_int, $day_int, $year_int)) {
-    die("خطا: تاریخ وارد شده نامعتبر است (مثلاً 31 شهریور).");
-}
-
+// The JalaliDate class handles logical validation (e.g. 31/07/1403 is invalid).
+// We just need to construct the string and check the conversion result.
 $log_date_jalali = sprintf('%04d/%02d/%02d', $year_int, $month_int, $day_int);
 $gregorian_date_obj = JalaliDate::fromJalaliToDateTime($log_date_jalali);
 if ($gregorian_date_obj === false) { die("خطا در تبدیل تاریخ شمسی."); }

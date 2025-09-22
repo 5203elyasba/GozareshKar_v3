@@ -1,33 +1,43 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    // --- Custom Number Spinner Logic ---
+    // --- Custom Number Spinner Logic (Rewritten for correctness) ---
     function setupCustomNumberInputs() {
         document.querySelectorAll('.custom-number-input').forEach(container => {
             const input = container.querySelector('input[type="text"]');
             const decBtn = container.querySelector('.btn-decrement');
             const incBtn = container.querySelector('.btn-increment');
 
-            if(!input || !decBtn || !incBtn) return;
+            if (!input || !decBtn || !incBtn) return;
+
+            const inputName = input.name;
+            let min = 1, max = 31; // Default for day
+
+            if (inputName.includes('month')) {
+                min = 1; max = 12;
+            } else if (inputName.includes('year')) {
+                min = 1390; max = 1500;
+            }
 
             decBtn.addEventListener('click', () => {
-                let value = parseInt(input.value, 10) || 1;
-                if (value > 1) { // Prevent going below 1
+                let value = parseInt(input.value, 10);
+                if (isNaN(value)) value = min;
+                if (value > min) {
                     input.value = value - 1;
                     input.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             });
 
             incBtn.addEventListener('click', () => {
-                let value = parseInt(input.value, 10) || 0;
-                // Add a reasonable max limit
-                if (input.name === 'log_year' && value >= 1500) return;
-                if (input.name === 'leave_year' && value >= 1500) return;
-                input.value = value + 1;
-                input.dispatchEvent(new Event('change', { bubbles: true }));
+                let value = parseInt(input.value, 10);
+                if (isNaN(value)) value = min;
+                if (value < max) {
+                    input.value = value + 1;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
             });
         });
     }
-    setupCustomNumberInputs();
+    setupCustomNumberInputs(); // Call the setup function
 
     // --- Time Input Masking ---
     function applyTimeMask(element) {
@@ -71,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function addWorkInterval(container) {
         const newInterval = document.createElement('div');
         newInterval.classList.add('row', 'g-2', 'mb-2', 'align-items-end');
+        // Ensure the correct labels are used
         newInterval.innerHTML = `<div class="col-md"><label class="form-label">ساعت ورود</label><input type="text" class="form-control time-input" name="start_time[]" placeholder="HH:MM" required></div><div class="col-md"><label class="form-label">ساعت خروج</label><input type="text" class="form-control time-input" name="end_time[]" placeholder="HH:MM" required></div><div class="col-md-auto"><button type="button" class="btn btn-sm btn-danger remove-interval">-</button></div>`;
         container.appendChild(newInterval);
         newInterval.querySelectorAll('.time-input').forEach(applyTimeMask);
@@ -117,36 +128,52 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- Form Persistence (Only on index.php) ---
-    const form = document.getElementById('log-form');
-    if (form && dayInput) {
-        function saveFormState() {
-            const firstStartTime = form.querySelector('input[name="start_time[]"]');
-            localStorage.setItem('formState', JSON.stringify({
-                day: dayInput.value, month: monthInput.value, year: yearInput.value,
-                startTime: firstStartTime ? firstStartTime.value : '',
-                timestamp: new Date().getTime()
-            }));
-        }
-        function loadFormState() {
-            const savedState = localStorage.getItem('formState');
-            if (savedState) {
-                const state = JSON.parse(savedState);
-                const now = new Date();
-                const savedDate = new Date(state.timestamp);
-                if (now.toDateString() !== savedDate.toDateString()) {
-                    localStorage.removeItem('formState');
-                    return;
-                }
-                dayInput.value = state.day;
-                monthInput.value = state.month;
-                yearInput.value = state.year;
-                const firstStartTime = form.querySelector('input[name="start_time[]"]');
-                if (firstStartTime) { firstStartTime.value = state.startTime; }
-                updateMaxDays();
+    // --- Form Persistence (Rewritten for correctness) ---
+    const logForm = document.getElementById('log-form');
+    const isEditPage = new URLSearchParams(window.location.search).has('date');
+
+    if (logForm && dayInput && monthInput && yearInput && !isEditPage) {
+        const STORAGE_KEY = 'dailyLogState';
+
+        const saveState = () => {
+            const firstStartTimeInput = logForm.querySelector('input[name="start_time[]"]');
+            const state = {
+                day: dayInput.value,
+                month: monthInput.value,
+                year: yearInput.value,
+                startTime: firstStartTimeInput ? firstStartTimeInput.value : '',
+                // Use YYYY-MM-DD for reliable same-day comparison
+                timestamp: new Date().toISOString().slice(0, 10)
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        };
+
+        const loadState = () => {
+            const savedStateJSON = localStorage.getItem(STORAGE_KEY);
+            if (!savedStateJSON) return;
+
+            const savedState = JSON.parse(savedStateJSON);
+            const today = new Date().toISOString().slice(0, 10);
+
+            if (savedState.timestamp !== today) {
+                localStorage.removeItem(STORAGE_KEY);
+                return;
             }
-        }
-        if (!new URLSearchParams(window.location.search).has('date')) { loadFormState(); }
-        form.addEventListener('input', saveFormState);
+
+            dayInput.value = savedState.day;
+            monthInput.value = savedState.month;
+            yearInput.value = savedState.year;
+
+            const firstStartTimeInput = logForm.querySelector('input[name="start_time[]"]');
+            if (firstStartTimeInput) {
+                firstStartTimeInput.value = savedState.startTime;
+                applyTimeMask(firstStartTimeInput);
+            }
+
+            updateMaxDays();
+        };
+
+        loadState();
+        logForm.addEventListener('input', saveState);
     }
 });
