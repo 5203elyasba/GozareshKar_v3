@@ -5,6 +5,7 @@ require_once 'JalaliDate.php';
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ header("location: login.php"); exit; }
 $user_id = $_SESSION['id'];
 
+// --- Fetch User's Leave Data ---
 $annual_leave_total = 0;
 $leave_taken = [];
 try {
@@ -40,7 +41,7 @@ $log_date_day = $today_parts[2];
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container my-4">
+<div class="container my-5">
     <?php require_once 'nav.php'; ?>
     <h2 class="mb-4">مدیریت مرخصی</h2>
 
@@ -61,7 +62,7 @@ $log_date_day = $today_parts[2];
                         <label class="form-label">تاریخ مرخصی</label>
                         <div class="row g-2">
                             <div class="col">
-                                <div class="custom-number-input"><button type="button" class="btn btn-light btn-decrement" data-input="leave_day">-</button><input type="text" inputmode="numeric" class="form-control" name="leave_day" placeholder="روز" value="<?php echo $log_date_day; ?>" required><button type="button" class="btn btn-light btn-increment" data-input="leave_day">+</button></div>
+                                <div class="custom-number-input"><button type="button" class="btn btn-decrement">-</button><input type="text" inputmode="numeric" class="form-control" name="leave_day" value="<?php echo $log_date_day; ?>" required><button type="button" class="btn btn-increment">+</button></div>
                             </div>
                             <div class="col-5">
                                  <select class="form-select" name="leave_month" required>
@@ -71,7 +72,7 @@ $log_date_day = $today_parts[2];
                                 </select>
                             </div>
                             <div class="col">
-                                <div class="custom-number-input"><button type="button" class="btn btn-light btn-decrement" data-input="leave_year">-</button><input type="text" inputmode="numeric" class="form-control" name="leave_year" placeholder="سال" value="<?php echo $log_date_year; ?>" required><button type="button" class="btn btn-light btn-increment" data-input="leave_year">+</button></div>
+                                <div class="custom-number-input"><button type="button" class="btn btn-decrement">-</button><input type="text" inputmode="numeric" class="form-control" name="leave_year" value="<?php echo $log_date_year; ?>" required><button type="button" class="btn btn-increment">+</button></div>
                             </div>
                         </div>
                     </div>

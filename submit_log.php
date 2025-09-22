@@ -13,29 +13,39 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 }
 
 // --- Data Retrieval & Date Construction ---
-$day = str_pad((int)$_POST['log_day'], 2, '0', STR_PAD_LEFT);
-$month = str_pad((int)$_POST['log_month'], 2, '0', STR_PAD_LEFT);
-$year = (int)$_POST['log_year'];
-$log_date_jalali = "{$year}/{$month}/{$day}";
+$day = $_POST['log_day'] ?? '';
+$month = $_POST['log_month'] ?? '';
+$year = $_POST['log_year'] ?? '';
 
+// --- Robust Validation ---
+if (empty($day) || empty($month) || empty($year) || !is_numeric($day) || !is_numeric($month) || !is_numeric($year)) {
+    die("خطا: تاریخ ناقص است. لطفاً روز، ماه و سال را به درستی وارد کنید.");
+}
+
+$day_int = (int)$day;
+$month_int = (int)$month;
+$year_int = (int)$year;
+
+if (!checkdate($month_int, $day_int, $year_int)) {
+    die("خطا: تاریخ وارد شده نامعتبر است (مثلاً 31 شهریور).");
+}
+
+$log_date_jalali = sprintf('%04d/%02d/%02d', $year_int, $month_int, $day_int);
+$gregorian_date_obj = JalaliDate::fromJalaliToDateTime($log_date_jalali);
+if ($gregorian_date_obj === false) { die("خطا در تبدیل تاریخ شمسی."); }
+$gregorian_date_str = $gregorian_date_obj->format('Y-m-d');
+
+// --- Data Retrieval (continued) ---
 $user_id = $_SESSION["id"];
 $work_start_times = $_POST["start_time"] ?? [];
 $work_end_times = $_POST["end_time"] ?? [];
 $total_break_minutes = (int)($_POST['total_break_minutes'] ?? 0);
 
-// --- Validation ---
-if (!checkdate((int)$month, (int)$day, (int)$year)) { // Basic check, not Jalali-aware but good enough for format
-    die("Invalid date parts provided. Please ensure day, month, and year are filled correctly.");
-}
-$gregorian_date_obj = JalaliDate::fromJalaliToDateTime($log_date_jalali);
-if ($gregorian_date_obj === false) { die("Invalid Jalali date."); }
-$gregorian_date_str = $gregorian_date_obj->format('Y-m-d');
-
 // --- Database Operation (Transaction) ---
 try {
     $pdo->beginTransaction();
 
-    // Delete existing logs for this user on this date
+    // Delete existing time logs for this user on this date
     $delete_sql = "DELETE FROM time_logs WHERE user_id = :user_id AND log_date = :log_date";
     $delete_stmt = $pdo->prepare($delete_sql);
     $delete_stmt->execute([':user_id' => $user_id, ':log_date' => $gregorian_date_str]);
@@ -62,6 +72,6 @@ try {
 
 } catch (Exception $e) {
     $pdo->rollBack();
-    header("location: index.php?date={$log_date_jalali}&error=db_error");
+    header("location: index.php?date={$log_date_jalali}&error=db_error&msg=" . urlencode($e->getMessage()));
 }
 ?>

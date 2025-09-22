@@ -12,7 +12,7 @@ class JalaliDate {
             try {
                 $date = new DateTime($date);
             } catch (Exception $e) {
-                return ''; // Return empty string for invalid date format
+                return '';
             }
         }
         if (!($date instanceof DateTime)) {
@@ -44,13 +44,12 @@ class JalaliDate {
             IntlDateFormatter::NONE,
             'Asia/Tehran',
             IntlDateFormatter::TRADITIONAL,
-            'yyyy/M/d' // More flexible pattern for parsing
+            'yyyy/M/d'
         );
 
         $timestamp = $formatter->parse($normalizedDate);
 
         if ($timestamp === false) {
-            // Try another common pattern
             $formatter->setPattern('yyyy/MM/dd');
             $timestamp = $formatter->parse($normalizedDate);
             if ($timestamp === false) {
@@ -58,8 +57,6 @@ class JalaliDate {
             }
         }
 
-        // Create the DateTime object from the timestamp and then set the timezone.
-        // This is a more stable way to handle it.
         $date = new DateTime();
         $date->setTimestamp($timestamp);
         $date->setTimezone(new DateTimeZone('Asia/Tehran'));
@@ -67,11 +64,6 @@ class JalaliDate {
         return $date;
     }
 
-    /**
-     * Helper function to convert Persian (Farsi) number characters to Latin (English) digits.
-     * @param string $string The string containing Persian numbers.
-     * @return string The string with Latin digits.
-     */
     private static function convertNumbersToLatin(string $string): string {
         $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
         $latin = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
