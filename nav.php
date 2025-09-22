@@ -3,7 +3,7 @@
 ?>
 <nav class="navbar navbar-expand-lg navbar-light mb-4 rounded">
      <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">خوش آمدید, <?php echo htmlspecialchars($_SESSION['username']); ?>!</a>
+        <a class="navbar-brand" href="index.php">ثبت گزارش روزانه</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="main-nav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">

@@ -48,8 +48,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     checkIntervalLimit();
 
-    // --- "Fetch Date" & "Log Now" buttons ---
-    // ... logic for these buttons ...
+    // --- "Fetch Date" & "Log Now" buttons (Only on index.php) ---
+    const fetchDateBtn = document.getElementById('fetch-date-btn');
+    if (fetchDateBtn && dayInput && monthInput && yearInput) {
+        fetchDateBtn.addEventListener('click', () => {
+            const dateStr = `${yearInput.value}/${String(monthInput.value).padStart(2, '0')}/${String(dayInput.value).padStart(2, '0')}`;
+            window.location.href = 'index.php?date=' + dateStr;
+        });
+    }
+    const logNowBtn = document.getElementById('log-now-btn');
+    if (logNowBtn && dayInput && monthInput && yearInput) {
+        logNowBtn.addEventListener('click', () => {
+            try {
+                const now = new persianDate();
+                dayInput.value = now.date();
+                monthInput.value = now.month();
+                yearInput.value = now.year();
+                const timeNow = new Date();
+                const firstStartTimeInput = document.querySelector('input[name="start_time[]"]');
+                if (firstStartTimeInput) {
+                    firstStartTimeInput.value = `${String(timeNow.getHours()).padStart(2, '0')}:${String(timeNow.getMinutes()).padStart(2, '0')}`;
+                    applyTimeMask(firstStartTimeInput);
+                }
+                updateMaxDays();
+            } catch (e) { alert("خطا: کتابخانه تاریخ شمسی بارگذاری نشده است."); }
+        });
+    }
 
     // --- Form Persistence using localStorage ---
     const form = document.getElementById('log-form');
