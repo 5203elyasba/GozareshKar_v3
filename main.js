@@ -1,44 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    // --- Custom Number Spinner Logic (Rewritten for correctness) ---
-    function setupCustomNumberInputs() {
-        document.querySelectorAll('.custom-number-input').forEach(container => {
-            const input = container.querySelector('input[type="text"]');
-            const decBtn = container.querySelector('.btn-decrement');
-            const incBtn = container.querySelector('.btn-increment');
-
-            if (!input || !decBtn || !incBtn) return;
-
-            const inputName = input.name;
-            let min = 1, max = 31; // Default for day
-
-            if (inputName.includes('month')) {
-                min = 1; max = 12;
-            } else if (inputName.includes('year')) {
-                min = 1390; max = 1500;
-            }
-
-            decBtn.addEventListener('click', () => {
-                let value = parseInt(input.value, 10);
-                if (isNaN(value)) value = min;
-                if (value > min) {
-                    input.value = value - 1;
-                    input.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            });
-
-            incBtn.addEventListener('click', () => {
-                let value = parseInt(input.value, 10);
-                if (isNaN(value)) value = min;
-                if (value < max) {
-                    input.value = value + 1;
-                    input.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            });
-        });
-    }
-    setupCustomNumberInputs(); // Call the setup function
-
     // --- Time Input Masking ---
     function applyTimeMask(element) {
         if (!element) return;
@@ -48,59 +9,64 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.time-input').forEach(applyTimeMask);
 
     // --- Date Input & Validation Logic ---
-    const dayInput = document.querySelector('input[name="log_day"], input[name="leave_day"]');
-    const monthInput = document.querySelector('select[name="log_month"], select[name="leave_month"]');
-    const yearInput = document.querySelector('input[name="log_year"], input[name="leave_year"]');
+    const dayInput = document.querySelector('input[name="log_day"]');
+    const monthInput = document.querySelector('select[name="log_month"]');
+    const yearInput = document.querySelector('input[name="log_year"]');
 
-    function updateMaxDays() {
-        if (!dayInput || !monthInput || !yearInput) return;
-        const month = parseInt(monthInput.value, 10);
-        const year = parseInt(yearInput.value, 10);
-        let maxDays = 31;
-        if (month >= 7 && month <= 11) maxDays = 30;
-        else if (month === 12) {
-            const leap_years = [1, 5, 9, 13, 17, 22, 26, 30];
-            maxDays = leap_years.includes(year % 33) ? 30 : 29;
-        }
-        if (parseInt(dayInput.value, 10) > maxDays) dayInput.value = maxDays;
+    function setupCustomNumberInputs() {
+        document.querySelectorAll('.custom-number-input').forEach(container => {
+            const input = container.querySelector('input[type="text"]');
+            const decBtn = container.querySelector('.btn-decrement');
+            const incBtn = container.querySelector('.btn-increment');
+            if (!input || !decBtn || !incBtn) return;
+            decBtn.addEventListener('click', () => { let val = parseInt(input.value) || 1; if(val > 1) input.value = val - 1; });
+            incBtn.addEventListener('click', () => { let val = parseInt(input.value) || 0; if(val < 31) input.value = val + 1; });
+        });
     }
-
-    if (monthInput && yearInput) {
-        monthInput.addEventListener('change', updateMaxDays);
-        yearInput.addEventListener('change', updateMaxDays);
-        updateMaxDays();
-    }
+    if (dayInput) setupCustomNumberInputs();
 
     // --- Add/Remove Work Intervals ---
     const addWorkBtn = document.getElementById('add-interval');
     const workContainer = document.getElementById('time-intervals-container');
-    function checkIntervalLimit() {
-        if (!workContainer || !addWorkBtn) return;
-        addWorkBtn.disabled = workContainer.querySelectorAll('.row').length >= 2;
-    }
-    function addWorkInterval(container) {
-        const newInterval = document.createElement('div');
-        newInterval.classList.add('row', 'g-2', 'mb-2', 'align-items-end');
-        // Ensure the correct labels are used
-        newInterval.innerHTML = `<div class="col-md"><label class="form-label">ساعت ورود</label><input type="text" class="form-control time-input" name="start_time[]" placeholder="HH:MM" required></div><div class="col-md"><label class="form-label">ساعت خروج</label><input type="text" class="form-control time-input" name="end_time[]" placeholder="HH:MM" required></div><div class="col-md-auto"><button type="button" class="btn btn-sm btn-danger remove-interval">-</button></div>`;
-        container.appendChild(newInterval);
-        newInterval.querySelectorAll('.time-input').forEach(applyTimeMask);
-    }
-    if (addWorkBtn && workContainer) {
-        addWorkBtn.addEventListener('click', () => { addWorkInterval(workContainer); checkIntervalLimit(); });
-    }
-    const formCard = document.getElementById('log-form-card');
-    if (formCard) {
-        formCard.addEventListener('click', (e) => {
-            if (e.target && e.target.classList.contains('remove-interval')) {
-                e.target.closest('.row').remove();
-                checkIntervalLimit();
+
+    function updateRemoveButtons() {
+        const rows = workContainer.querySelectorAll('.time-interval-row');
+        rows.forEach((row, index) => {
+            const removeBtn = row.querySelector('.remove-interval');
+            if (removeBtn) {
+                removeBtn.style.display = (rows.length > 1) ? 'inline-block' : 'none';
             }
         });
     }
-    if(workContainer) checkIntervalLimit();
 
-    // --- "Fetch Date" & "Log Now" buttons (Only on index.php) ---
+    if (addWorkBtn && workContainer) {
+        addWorkBtn.addEventListener('click', () => {
+            const newInterval = document.createElement('div');
+            newInterval.classList.add('row', 'g-2', 'mb-2', 'align-items-center', 'time-interval-row');
+            newInterval.innerHTML = `
+                <input type="hidden" name="log_id[]" value="">
+                <div class="col"><label class="form-label">ساعت ورود</label><input type="text" class="form-control time-input" name="start_time[]"></div>
+                <div class="col-auto"><button type="button" class="btn btn-outline-primary btn-sm btn-log-now" data-type="start">ثبت</button></div>
+                <div class="col"><label class="form-label">ساعت خروج</label><input type="text" class="form-control time-input" name="end_time[]"></div>
+                <div class="col-auto"><button type="button" class="btn btn-outline-primary btn-sm btn-log-now" data-type="end">ثبت</button></div>
+                <div class="col-auto"><button type="button" class="btn btn-sm btn-danger remove-interval">-</button></div>
+            `;
+            workContainer.appendChild(newInterval);
+            newInterval.querySelectorAll('.time-input').forEach(applyTimeMask);
+            updateRemoveButtons();
+        });
+    }
+
+    workContainer.addEventListener('click', (e) => {
+        if (e.target && e.target.classList.contains('remove-interval')) {
+            e.target.closest('.time-interval-row').remove();
+            updateRemoveButtons();
+        }
+    });
+    if (workContainer) updateRemoveButtons();
+
+
+    // --- "Fetch Date" Button ---
     const fetchDateBtn = document.getElementById('fetch-date-btn');
     if (fetchDateBtn) {
         fetchDateBtn.addEventListener('click', () => {
@@ -109,71 +75,53 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = 'index.php?date=' + dateStr;
         });
     }
-    const logNowBtn = document.getElementById('log-now-btn');
-    if (logNowBtn) {
-        logNowBtn.addEventListener('click', () => {
-            try {
-                const now = new persianDate();
-                dayInput.value = now.date();
-                monthInput.value = now.month();
-                yearInput.value = now.year();
-                const timeNow = new Date();
-                const firstStartTimeInput = document.querySelector('input[name="start_time[]"]');
-                if (firstStartTimeInput) {
-                    firstStartTimeInput.value = `${String(timeNow.getHours()).padStart(2, '0')}:${String(timeNow.getMinutes()).padStart(2, '0')}`;
-                    applyTimeMask(firstStartTimeInput);
+
+    // --- "Log Now" AJAX Logic ---
+    workContainer.addEventListener('click', function(e) {
+        if (!e.target.classList.contains('btn-log-now')) return;
+
+        const button = e.target;
+        const row = button.closest('.time-interval-row');
+        const logIdInput = row.querySelector('input[name="log_id[]"]');
+        const type = button.dataset.type;
+        const timeInput = (type === 'start') ? row.querySelector('input[name="start_time[]"]') : row.querySelector('input[name="end_time[]"]');
+
+        if (!timeInput.value.match(/^\d{2}:\d{2}$/)) { alert('فرمت زمان باید HH:MM باشد.'); return; }
+
+        const jalaliDate = `${yearInput.value}/${String(monthInput.value).padStart(2,'0')}/${String(dayInput.value).padStart(2,'0')}`;
+
+        button.disabled = true;
+        button.textContent = '...';
+
+        fetch('save_time_ajax.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                log_id: logIdInput.value,
+                log_date: jalaliDate,
+                time: timeInput.value,
+                type: type
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                button.textContent = 'ثبت شد';
+                button.classList.replace('btn-outline-primary', 'btn-success');
+                timeInput.readOnly = true;
+                if (data.log_id && !logIdInput.value) {
+                    logIdInput.value = data.log_id;
                 }
-                updateMaxDays();
-            } catch (e) { alert("خطا: کتابخانه تاریخ شمسی (`persian-date.min.js`) بارگذاری نشده است."); }
+            } else {
+                alert('خطا: ' + data.message);
+                button.disabled = false;
+                button.textContent = 'ثبت';
+            }
+        })
+        .catch(err => {
+            alert('خطای شبکه.');
+            button.disabled = false;
+            button.textContent = 'ثبت';
         });
-    }
-
-    // --- Form Persistence (Rewritten for correctness) ---
-    const logForm = document.getElementById('log-form');
-    const isEditPage = new URLSearchParams(window.location.search).has('date');
-
-    if (logForm && dayInput && monthInput && yearInput && !isEditPage) {
-        const STORAGE_KEY = 'dailyLogState';
-
-        const saveState = () => {
-            const firstStartTimeInput = logForm.querySelector('input[name="start_time[]"]');
-            const state = {
-                day: dayInput.value,
-                month: monthInput.value,
-                year: yearInput.value,
-                startTime: firstStartTimeInput ? firstStartTimeInput.value : '',
-                // Use YYYY-MM-DD for reliable same-day comparison
-                timestamp: new Date().toISOString().slice(0, 10)
-            };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        };
-
-        const loadState = () => {
-            const savedStateJSON = localStorage.getItem(STORAGE_KEY);
-            if (!savedStateJSON) return;
-
-            const savedState = JSON.parse(savedStateJSON);
-            const today = new Date().toISOString().slice(0, 10);
-
-            if (savedState.timestamp !== today) {
-                localStorage.removeItem(STORAGE_KEY);
-                return;
-            }
-
-            dayInput.value = savedState.day;
-            monthInput.value = savedState.month;
-            yearInput.value = savedState.year;
-
-            const firstStartTimeInput = logForm.querySelector('input[name="start_time[]"]');
-            if (firstStartTimeInput) {
-                firstStartTimeInput.value = savedState.startTime;
-                applyTimeMask(firstStartTimeInput);
-            }
-
-            updateMaxDays();
-        };
-
-        loadState();
-        logForm.addEventListener('input', saveState);
-    }
+    });
 });

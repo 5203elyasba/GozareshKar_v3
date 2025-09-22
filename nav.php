@@ -7,17 +7,22 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="reports.php">گزارشات</a>
+                    <a class="nav-link" href="index.php">ثبت گزارش</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="leave.php">مرخصی</a>
                 </li>
+                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="admin.php">پنل مدیریت</a>
+                </li>
+                <?php endif; ?>
             </ul>
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <span class="navbar-text me-3">
-                        <?php if(isset($_SESSION["username"])) echo "خوش آمدید، " . htmlspecialchars($_SESSION["username"]); ?>
-                    </span>
+                    <a class="nav-link" href="profile.php">
+                        <?php echo "پروفایل: " . htmlspecialchars($_SESSION["username"]); ?>
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="logout.php">خروج</a>

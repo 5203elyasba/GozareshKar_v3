@@ -42,7 +42,7 @@ $log_date_day = $today_parts[2];
 </head>
 <body>
 <div class="container my-5">
-    <?php require_once 'nav.php'; // Ensure the navigation bar is included ?>
+    <?php if(file_exists('nav.php')) { require_once 'nav.php'; } ?>
     <h2 class="mb-4">مدیریت مرخصی</h2>
 
     <div class="row text-center mb-4 g-3">
